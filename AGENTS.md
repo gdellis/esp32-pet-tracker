@@ -1,12 +1,22 @@
 # AGENTS.md
 
-This is a Rust project for ESP32 (pet tracker). The codebase is currently minimal.
+This is a Rust project for ESP32 (pet tracker).
 
 ## Project Overview
 
 - **Type**: Embedded Rust project (ESP32)
-- **Stack**: Rust, ESP-IDF, potentially WiFi/BLE tracking components
+- **Stack**: Rust, ESP-IDF, LoRa SX1262, GPS, BLE
 - **Reference**: https://docs.espressif.com/projects/rust/book/preface.html
+
+## Pre-Commit Hooks
+
+Run before every commit:
+
+```bash
+pre-commit run --all-files
+```
+
+This lints markdown files and checks for common issues. Fix any errors before committing.
 
 ## Build Commands
 
@@ -112,3 +122,89 @@ cargo test --test integration
 - `esp-idf-macros`: Procedural macros for ESP
 - `embedded-svc`: Embedded services trait definitions
 - `anyhow` / `thiserror`: For error handling (app level, not embedded)
+
+## Git Workflow
+
+### Branch Strategy
+
+- `main`: Production-ready code (currently contains design docs only)
+- Feature work happens in branches: `feat/<feature-name>`, `fix/<issue-name>`
+
+### Commit Rules
+
+- **Atomic commits**: One logical change per commit
+- **Imperative mood**: "Add feature" not "Added feature"
+- **Max 72 chars** for subject line
+- **Reference issues**: "Fix #123, add GPS parsing" when applicable
+
+### Process
+
+1. Create branch from `main`: `git checkout -b feat/my-feature`
+2. Make changes, commit incrementally
+3. Run pre-commit: `pre-commit run --all-files`
+4. Push branch: `git push -u origin feat/my-feature`
+5. Create PR via GitHub CLI: `gh pr create`
+6. Address review feedback
+7. Merge via "Squash and merge" on GitHub
+
+### Never Do
+
+- Never commit directly to `main`
+- Never force push to `main` or shared branches
+- Never commit secrets, API keys, or credentials
+- Never amend or rebase commits already pushed to shared branches
+
+## Pull Requests
+
+### PR Creation
+
+```bash
+# Create PR from current branch
+gh pr create --title "feat: add GPS parsing module" --body "## Summary
+
+- Add NMEA parsing for GGA/RMC sentences
+- Implement GPS driver trait
+
+## Testing
+
+- Test with NEO-6M module outdoors"
+```
+
+### PR Guidelines
+
+- **Title format**: `feat:`, `fix:`, `docs:`, `refactor:` prefix
+- **Description**: Explain *why* not just *what*
+- **Screenshots**: For UI changes (not applicable here)
+- **Testing**: Describe how changes were verified
+- **Breaking changes**: Note if any APIs changed
+
+### PR Review
+
+- Address all comments before merging
+- Use "Request changes" only for blocking issues
+- Approve when ready to merge
+- Squash merge preferred for clean history
+
+## GitHub CLI
+
+```bash
+# Create PR
+gh pr create --title "feat: add GPS module" --body "$(cat <<'EOF'
+## Summary
+- Add GPS parsing with NMEA support
+- Implement GpsDriver trait
+EOF
+)"
+
+# View PR status
+gh pr status
+
+# Check PR diff
+gh pr diff 123
+
+# Merge PR
+gh pr merge 123 --squash --delete-branch
+
+# Close PR
+gh pr close 123
+```
