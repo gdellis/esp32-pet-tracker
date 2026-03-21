@@ -25,12 +25,10 @@ repos:
     hooks:
       - id: markdownlint
 
-  # Rust hooks (requires rust toolchain)
-  - repo: https://github.com/doubletime/rust
-    rev: v0.1.0
-    hooks:
-      - id: cargo-check
-      - id: cargo-fmt
-        args: ['--', '--check']
-      - id: cargo-clippy
-        args: ['--', '-D', 'warnings']
+  # Rust hooks - add when implementing firmware
+  # - repo: https://github.com/johnthagen/pre-commit-rust
+  #   rev: v0.1.0
+  #   hooks:
+  #     - id: cargo-check
+  #     - id: cargo-fmt
+  #     - id: cargo-clippy
