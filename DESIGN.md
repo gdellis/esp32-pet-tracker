@@ -568,30 +568,7 @@ All questions have been answered:
 
 ## Bill of Materials (BOM)
 
-| Component | Part | Est. Cost (USD) | Notes |
-|-----------|------|-----------------|-------|
-| Main MCU | Seeed Studio XIAO ESP32S3 | $10 | |
-| LoRa module | Seeed Wio-SX1262 for XIAO | $15 | |
-| GPS | u-blox NEO-6M | $8–15 | or MAX-M10S ($15–20) |
-| Accelerometer | LIS3DH | $1–2 | I2C, motion detection |
-| Battery | LiPo 503035 500mAh | $5 | Compact LiPo |
-| Charger | TP4056 USB-C | $1 | |
-| LDO | MCP1700-3302 | $0.30 | |
-| MOSFET | BSS138 or AO3400 | $0.10 | For GPS power switch |
-| Resistors | For voltage divider | $0.05 | |
-| Status LED | RGB SMD 5050 | $0.20 | |
-| Enclosure | 3D printed PETG | ~$2 | filament cost |
-| **Total (tracker)** | | **~$45–55** | Not including shipping |
-
-**Base station BOM**:
-
-| Component | Part | Est. Cost (USD) | Notes |
-|-----------|------|-----------------|-------|
-| Single-board computer | Raspberry Pi Zero 2 W | $15 | or Pi 3/4 |
-| LoRa hat | SX1262 LoRa HAT for Pi | $15–20 | |
-| Power supply | USB-C 5V 2A | $5 | |
-| SD card | 16GB | $5 | |
-| **Total (base station)** | | **~$40–45** | |
+See [BOM.md](BOM.md) for full component list with part numbers, pricing, vendor links, and order checklist.
 
 ---
 
