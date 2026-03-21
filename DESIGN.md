@@ -313,15 +313,25 @@ Raspberry Pi with LoRa hat (e.g., Raspberry Pi LoRa HAT):
 ```mermaid
 flowchart LR
     A[LoRa RX] --> B[Python Parser]
-    B --> C[WiFi MQTT Publish]
-    C --> D[HiveMQ Broker]
-    C --> E[(Optional ACK<br/>to tracker)]
+    B --> C[MQTT Bridge]
+    C <--> D[HiveMQ Broker]
+    C <--> E[(Phone App<br/>via MQTT)]
+    A <--|ACK| B
+    B <--|Command| C
 ```
 
-- LoRa receiver always listening
-- Python script parses packet, publishes to HiveMQ via WiFi
-- Optional ACK sent back to tracker after successful publish
-- **Web UI** for configuration and live data viewing (Flask + HTML/JS)
+**Roles**:
+
+1. **LoRa gateway**: Receives packets from trackers, sends ACKs
+2. **MQTT bridge**: Forwards tracker data to HiveMQ, receives commands from phone app
+3. **Command relay**: Forwards commands from phone → LoRa → tracker
+
+**Flows**:
+
+- **Tracker → Phone**: Tracker LoRa → Base Station → HiveMQ → Phone App
+- **Phone → Tracker**: Phone App → HiveMQ → Base Station → LoRa → Tracker
+
+**Web UI** for configuration and live data viewing (Flask + HTML/JS)
 
 ### Base Station Web UI
 
@@ -466,17 +476,48 @@ With SF7 + BW125k, ~20 bytes transmits in ~50–100 ms. At +17 dBm, TX current ~
 
 ## Mobile App (Future)
 
-- View current location on map
-- Set/edit geofence zones
+Mobile app connects to HiveMQ broker via base station's MQTT bridge to receive location updates and send commands.
+
+```mermaid
+flowchart LR
+    T[Tracker] -->|LoRa| B[Base Station]
+    B -->|MQTT| H[(HiveMQ<br/>Broker)]
+    P[Phone App] <-->|REST/MQTT| H
+    P <-->|BLE| T
+```
+
+**Features**:
+
+- View current location on map (OpenStreetMap or Google Maps)
+- Set/edit geofence zones (synced via MQTT)
 - Receive push notifications on geofence breach
 - View battery level and signal strength
 - Historical location trail
 
-**Options**:
+**Connectivity options**:
 
-- Native Android/iOS with Bluetooth LE connectivity (when in range)
-- Progressive Web App (PWA) via base station cloud connection
-- MQTT client on phone subscribes to device topics
+| Method | When | Protocol |
+|--------|------|----------|
+| Direct BLE | Phone within ~10m of tracker | BLE GATT |
+| Via HiveMQ | Phone anywhere with internet | MQTT over WebSocket |
+| Via base station | Phone on local network | HTTP REST |
+
+**Tech stack options**:
+
+- **PWA** (recommended): Works on iOS/Android via browser, no app store required
+- **Native**: Swift/SwiftUI (iOS) or Kotlin/Jetpack (Android)
+- **Both**: PWA as fallback, native app for push notifications
+
+**MQTT Topics**:
+
+| Topic | Direction | Payload |
+|-------|-----------|---------|
+| `pettracker/{device_id}/location` | Base → Phone | `{lat, lon, battery, timestamp}` |
+| `pettracker/{device_id}/status` | Base → Phone | `{rssi, moving, geofence_breach}` |
+| `pettracker/{device_id}/command` | Phone → Base → Tracker | `{cmd: "ping" \| "config" \| "alarm"}` |
+| `pettracker/{device_id}/config` | Phone → Base → Tracker | `{sleep_interval, geofences}` |
+
+The base station acts as an MQTT bridge: it receives LoRa packets and republishes to HiveMQ, and forwards commands from the phone app to the tracker via LoRa.
 
 ---
 
