@@ -52,11 +52,6 @@ See [DESIGN.md](DESIGN.md) for detailed software architecture.
 └── src/              # Rust firmware (future)
 ```
 
-## License
-
-- **Firmware** (`src/`, `base_station/`): [Personal Use Only](LICENSE)
-- **Documentation & Designs** (`DESIGN.md`, `BOM.md`, `PLAN.md`, `enclosure/`): [CC BY-NC-SA 4.0](LICENSE-DESIGNS)
-
 ## Firmware
 
 Built with Rust + ESP-IDF. See [AGENTS.md](AGENTS.md) for development guidelines.
@@ -86,3 +81,8 @@ Design complete. Implementation not yet started.
 
 - [ESP-IDF Rust Book](https://docs.espressif.com/projects/rust/book/preface.html)
 - [esp-rs/awesome-esp-rust](https://github.com/esp-rs/awesome-esp-rust)
+
+## License
+
+- **Firmware** (`src/`, `base_station/`): [Personal Use Only](LICENSE)
+- **Documentation & Designs** (`DESIGN.md`, `BOM.md`, `PLAN.md`, `enclosure/`): [CC BY-NC-SA 4.0](LICENSE-DESIGNS)
