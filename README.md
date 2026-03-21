@@ -1,5 +1,13 @@
 # Pet Tracker for ESP32
 
+[![Rust](https://img.shields.io/badge/Rust-1f425f.svg?logo=rust)](https://www.rust-lang.org/)
+[![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg)](https://www.rust-lang.org/)
+[![ESP32](https://img.shields.io/badge/ESP32-000.svg?logo=espressif)](https://www.espressif.com/)
+[![License: Personal Use Only](https://img.shields.io/badge/License-Personal%20Use%20Only-orange.svg)](LICENSE)
+[![CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE-DESIGNS)
+[![GitHub stars](https://img.shields.io/github/stars/gdellis/esp32-pet-tracker.svg?style=social)](https://github.com/gdellis/esp32-pet-tracker/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/gdellis/esp32-pet-tracker.svg?style=social)](https://github.com/gdellis/esp32-pet-tracker/network/members)
+
 ESP32-based pet tracker using LoRa radio to communicate with a home base station, which forwards data to the cloud. Built with Rust.
 
 ## Features
