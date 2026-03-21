@@ -13,23 +13,25 @@ cloud connectivity for remote monitoring via mobile app.
 
 ## Hardware
 
-### Main Board: Seeed Studio XIAO ESP32C3
+### Main Board: Seeed Studio XIAO ESP32S3 + Wio-SX1262 Kit
 
-- **MCU**: ESP32-C3 (RISC-V, 160 MHz, WiFi/Bluetooth 5.0 LE)
-- **Flash**: 4 MB
-- **USB**: USB-C for charging and programming
-- **Size**: 21 x 17.5 mm — very compact
-- **Note**: ESP32-C3 has no floating-point unit (no FPU). Keep math simple or use soft-float.
+**Option 1: Pre-assembled Kit** (Recommended)
 
-### Alternative Board: XIAO ESP32S3
+Seeed Studio sells a [XIAO ESP32S3 + Wio-SX1262 kit](https://www.seeedstudio.com/Wio-SX1262-with-XIAO-ESP32S3-p-5982.html) ($9.90) with everything on one board:
 
 - **MCU**: ESP32-S3 (Xtensa, 240 MHz, with FPU)
-- **Bluetooth 5.0 LE + BLE
-- **USB**: USB-C
-- **Size**: 21 x 17.5 mm
-- **Preferred if**: You want BLE fallback for direct phone connectivity and better floating-point performance
+- **LoRa**: SX1262 (868/915 MHz)
+- **Built-in power management** chip
+- **Interfaces**: IIC, UART, GPIO for GPS/sensor expansion
+- **Size**: 21 x 17.5 mm (thumb-sized)
+- **Meshtastic compatible** — can leverage existing firmware
 
-**Recommendation**: Use **ESP32-S3** for headroom (FPU, more RAM, BLE support).
+**Option 2: Discrete Components**
+
+Purchase separately:
+- Seeed Studio XIAO ESP32S3
+- Seeed Wio-SX1262 for XIAO
+- More flexibility but more assembly effort
 
 ### GPS Module: u-blox NEO-6M (or compatible)
 
