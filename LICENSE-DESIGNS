@@ -1,0 +1,28 @@
+# Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+
+To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+## You are free to
+
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material
+
+## Under the following terms
+
+- **Attribution** — You must give appropriate credit to the original work
+- **NonCommercial** — You may not use the material for commercial purposes
+- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license as the original
+
+## Applicable to
+
+- DESIGN.md — Design documentation
+- BOM.md — Bill of materials
+- PLAN.md — Implementation plan
+- enclosure/ — 3D printed enclosure design files
+- Any other documentation or design files in this repository
+
+## Not covered
+
+Firmware/source code in the `src/` directory and `base_station/` directory is licensed separately under the "Personal Use Only License" in the `LICENSE` file.

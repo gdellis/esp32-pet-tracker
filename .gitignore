@@ -1,0 +1,41 @@
+# Build artifacts
+*.elf
+*.bin
+*.map
+*.d
+*.o
+
+# Build directories
+build/
+dist/
+target/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+.venv/
+
+# Node
+node_modules/
+npm-debug.log
+
+# Kept for structure only
+# Do not commit empty directories
+!.gitkeep

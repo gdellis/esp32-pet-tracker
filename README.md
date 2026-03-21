@@ -42,10 +42,20 @@ See [DESIGN.md](DESIGN.md) for detailed software architecture.
 ├── AGENTS.md          # Development guidelines for agents
 ├── DESIGN.md          # Full design document
 ├── PLAN.md            # Implementation plan
+├── BOM.md             # Bill of materials
+├── LICENSE            # Firmware: Personal Use Only
+├── LICENSE-DESIGNS   # Docs/designs: CC BY-NC-SA 4.0
 ├── README.md          # This file
 ├── .markdownlint.json # Markdown linting config
-└── src/              # Firmware (when implemented)
+├── .pre-commit-config.yaml
+├── base_station/      # Python base station (future)
+└── src/              # Rust firmware (future)
 ```
+
+## License
+
+- **Firmware** (`src/`, `base_station/`): [Personal Use Only](LICENSE)
+- **Documentation & Designs** (`DESIGN.md`, `BOM.md`, `PLAN.md`, `enclosure/`): [CC BY-NC-SA 4.0](LICENSE-DESIGNS)
 
 ## Firmware
 
