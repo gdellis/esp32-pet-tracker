@@ -107,7 +107,7 @@ Design files to be created in:
 
 **Suggested Dimensions** (verify against actual components):
 - Length: ~60mm
-- Width: ~40mm  
+- Width: ~40mm
 - Height: ~25mm
 - Wall thickness: ~3mm
 - Gasket groove: 2mm x 2mm channel

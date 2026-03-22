@@ -1,0 +1,84 @@
+{
+  "board": {
+    "3dviewports": [],
+    "design_settings": {
+      "defaults": {
+        "apply_defaults_to_fp_fields": false,
+        "apply_defaults_to_fp_shapes": false,
+        "apply_defaults_to_fp_text": false,
+        "board_outline_line_width": 0.1,
+        "copper_line_width": 0.2,
+        "courtyard_line_width": 0.05,
+        "edge_cut_line_width": 0.1,
+        "fab_line_width": 0.1,
+        "grid_size_x": "2.54 mm",
+        "grid_size_y": "2.54 mm",
+        "silk_line_width": 0.1,
+        "via_annulus_outer": 0.2,
+        "via_diameter": 0.8,
+        "via_drill": 0.4,
+        "pads": { "drill": 0.8, "height": 1.27, "width": 2.54 },
+        "zones": { "min_clearance": 0.5 }
+      },
+      "rules": {
+        "min_clearance": 0.0,
+        "min_copper_edge_clearance": 0.5,
+        "min_hole_clearance": 0.25,
+        "min_hole_to_hole": 0.25,
+        "min_track_width": 0.0,
+        "min_via_diameter": 0.5,
+        "min_via_annular_width": 0.1,
+        "max_error": 0.005
+      },
+      "track_widths": [0.25, 0.3, 0.4, 0.5, 0.6, 0.8, 1.0],
+      "via_dimensions": [],
+      "zones": { "min_clearance": 0.25 }
+    },
+    "edges": [],
+    "fields": {},
+    "layers": [
+      { "id": 0, "name": "F.Cu", "type": "signal", "zorder": 0 },
+      { "id": 31, "name": "B.Cu", "type": "signal", "zorder": 1 },
+      { "id": 112, "name": "Edge.Cuts", "type": "user", "zorder": 14 }
+    ],
+    "parameters": {
+      "pcb_text": {
+        "default": { "layer": "F.SilkS", "size": 1.5, "thickness": 0.25, "width": 0.5 }
+      }
+    },
+    "ports": [],
+    "ties": [],
+    "viewports": [],
+    "zone_groups": []
+  },
+  "erc": { "pin_map": [], "rule_severities": {} },
+  "general": {
+    "design_precision": 4,
+    "thickness": 1.6,
+    "title": "Pet Tracker PCB",
+    "units": 1
+  },
+  "libraries": { "pinned_footprint_libs": [], "pinned_symbol_libs": [] },
+  "meta": { "filename": "tracker.kicad_pcb", "version": 1 },
+  "net_settings": {
+    "classes": [
+      {
+        "name": "Default",
+        "clearance": 0.2,
+        "track_width": 0.2,
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
+        "priority": 2147483647
+      }
+    ],
+    "meta": { "version": 4 }
+  },
+  "pcbnew": {
+    "last_paths": {
+      "gencad": "", "idf": "", "netlist": "", "plot": "", "pos_files": "",
+      "specctra_dsn": "", "step": "", "svg": "", "vrml": ""
+    },
+    "page_layout_descr_file": ""
+  },
+  "text_variables": {}
+}

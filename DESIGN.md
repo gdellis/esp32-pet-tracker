@@ -33,6 +33,9 @@ Purchase separately:
 - Seeed Wio-SX1262 for XIAO
 - More flexibility but more assembly effort
 
+> **KiCad Library**: Seeed Studio provides an [Open Parts Library (OPL) KiCad
+> library](https://github.com/Seeed-Studio/OPL_Kicad_Library/tree/master/Seeed%20Studio%20Wio%20SX1262%20for%20XIAO%20ESP32S3) with the Wio SX1262 component, footprint, and 3D model.
+
 ### GPS Module: u-blox NEO-6M (or compatible)
 
 - **Interface**: UART (TX/RX)

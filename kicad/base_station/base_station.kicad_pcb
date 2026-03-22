@@ -1,0 +1,57 @@
+(kicad_pcb (version 20240108) (generator "KiBot")
+
+  (general
+    (thickness 1.6)
+    (drawings 0)
+    (tracks 0)
+    (zones 0)
+    (modules 0)
+    (nodes 0)
+  )
+
+  (paper "A4")
+
+  (title_block
+    (title "Pet Tracker Base Station")
+    (company "Pet Tracker Project")
+    (rev "1.0")
+    (date "2026-03-21")
+  )
+
+  (layers
+    (0 "F.Cu" "signal" "")
+    (31 "B.Cu" "signal" "")
+    (32 "B.Adhesive" "user" "")
+    (33 "F.Adhesive" "user" "")
+    (34 "B.Paste" "user" "")
+    (35 "F.Paste" "user" "")
+    (36 "B.SilkS" "user" "")
+    (37 "F.SilkS" "user" "")
+    (38 "B.Mask" "user" "")
+    (39 "F.Mask" "user" "")
+    (40 "Dwgs.User" "user" "")
+    (41 "Cmts.User" "user" "")
+    (42 "Eco1.User" "user" "")
+    (43 "Eco2.User" "user" "")
+    (44 "Edge.Cuts" "user" "")
+    (45 "Margin" "user" "")
+    (46 "B.CrtYd" "user" "")
+    (47 "F.CrtYd" "user" "")
+    (48 "B.Fab" "user" "")
+    (49 "F.Fab" "user" "")
+  )
+
+  (setup
+    (pad_to_mask_clearance 0.05)
+    (solder_mask_min_copper_edge_margin 0.05)
+    (grid (size 2.54mm))
+  )
+
+  (net_class "default" ""
+    (clearance 0.1)
+    (trace_width 0.25)
+  )
+
+  (net "")
+
+)

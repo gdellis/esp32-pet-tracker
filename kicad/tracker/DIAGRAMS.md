@@ -1,0 +1,34 @@
+# Pet Tracker - KiCad SVG Reference Diagrams
+
+These SVG diagrams can be viewed in a browser or imported into documentation.
+
+## System Overview
+
+**URL:** https://mermaid.ink/svg/pako:eNqNlO1u2jAUhv9zFUfu34WvrB-rpkrGUIiWECs2LZpVoZA4JSokyATRTr2t3cCubLJDER_LqH9Z9vMev-f42Mk830SzUBXAOzUAgNV6-qzC5Qx4gMmPXiAQlQVwFUYvUgF7WxVygZ4MqkecKhkVaZ596PXYTXbBqP9oQuUbqfbUhxHc4GCjgzkXyE1pDnb9-uH7VDXuLpvNBZ6hJ7CsOyCDvkCcfm1eXpnNEetYBMgsVM8np5BB32jcri-QR2jrutk0IrtuP-jVI97t-obv9gimArWaf37fAwmXe5jM4tppph4ZCTR2sA89Ru02syvT3SuYHtQZCuQ0fKBptjp7jOsHWKDHNLfYuNW-aoObB-Fnj3InjDoCMeqAkxVSJWEkj_Of4CEXaFS_dwFnhcyy8KynPmUTT6A-ZeDl8XouP-tHC0c40OfhgAMfN4LxkVYjlDKBKGVnjWBCeq5ArsPs7gBwFMm5VPlCFv9pviNLTpsI5LQJsC5uMOIe6RxdHGfIW2UB1XpZVLkyrW96ySOj3apHRmU_-gE-WTSFPFk1WdUO4u8y7mDWE6gTriSwItQJnXujugGCcLWcSqXegKbmMfyUKoc2PO6JqTMZYC5Q2WaG0q0GA8wPKGOxhA89bv8RsOrW3Tsy2purG2_wC70b29tMire53LFJOp_fXiRJ8mVVqPxF3l7Ytr2dW5s0Lma39vJ1T1gWeSv7diDbo3QlSyZO4gpGX8gHFFcFMhe0cxlWUObCtlSURBWUrsEWklJWQpyfTU__cSUznVYx-l_7J_MXYwKNig
+
+## Power Circuit Detail
+
+**URL:** https://mermaid.ink/svg/pako:eNqNk21u0zAYx7_vFJb3lY42AQYVmpTaXYnULpETUiRrivLaRoviynMpuwAH4BYfgAtwAA7BSZBfUtItYfhDbNm__-Mnj_9PWbNDtk24AOHsDAAA7vfphie7LfC79ZzEyCXooxtS6LNDwQGqeLavBLxVrBx5xYtMVKwBS3LcjGZOSKH8AvviMoK3YDS6AqH_avz6DYV6fp_yl1dom_BNwTvx9KHiV8ifXI7HFJqFUtgXdgSW2OtIzLHSRAhRGCEEJNdh5JY8x3Pk-BSiCZiMf_64ViFxkbH9rq6aTY9g6REnjihcMpKAFcv3ddFDfXIdT1JyBvPAt63A7gvmBjb-oMKp1eMsTwqoFCTGbkQhkfne_fqu8o1YLZJNoXOvPlf5SQGV4q_WopBYWvwYshS1uME9WgcjCh2MdNFniRAFfwAr1lSCtbcVTX526pmFH8TKNxQu_AAYz7BGcFb3esaYTg5VQn9NTBEXvutN9O0q6prEKCRLY6WVF1zPw3hB4SwIJvZbzSWi-zYt0xVgCjFPqgb8_vpNZitf5qkkoDBge54VGrvBT35YPNTFaYeAsqrr6XlZli_uBWd3xfTctm2zHh2qXGyn1u5LR34sVivNsv-VKnsY1buTCzuQ6SSNpekQ1nbPc5z0sGHKdIBR3dVfiQ6lW8pgeT6E6Z5qsTIfimZ6yoBZmQ2A2tzPJedgdGSSoZK1zjJgmv4bxP3gH58dhOs
+
+## Pin Connections Detail
+
+**URL:** https://mermaid.ink/svg/pako:eNqNlFtr2zAUx9_7KYT6ssFCLWm1kzAKrhUyMzU2kWEGMUzqyxLqNcX16Pbtx5EvsZXR2A_G_PU7R-fqojy-pftdVaPo_gohhF5_P_6sdi97FPtuoDC80UqGjEqGf2gCnuxQ5Wl9OD53ZvCsQz-wFObWjf768ljd3AlfMv418TcRGZjDOVGYE00STfrUSyR3DYoqzKmm6InyhEExhTnTFNOUDP1Eet8MylGYf258NcGtQ5lsY4OaK8xvG4r0VGRStsLc1pTd3BgTatOE-8FZnlASR6POEN1IaZJQkkVTErvP48GXgQlCVUhTZuKcyED6JnkLZOtzPvKZ7Mp6QLvcsxSGt6bu3ShKXO61RP6cXY3HQwRbV-Hvh-OsyQd9kPUufcqzj5fGREDqCo_zFzomhY1shU5KYSM1Ad1VeNxioauv8KAH52GvQ7h6FczsB_i-ONJJFCs87n6yjRUej00Sgtuw93d-r-t5K6Fwsw7ITdO8zKvjr7zOq0sxuLAWCo93w4UtgAqIkQh7pvBg2_pI9ASg2eyu8ddrtNM80WtWq4EfLfYnjj6BEvTSvJWi2LDXVRmbM32gu3cKirQitP6k0k4NpH9SrVbdSNmLdqtB39uq13_LXP_AUHEoy-V1VmSfXuvq-JQvrxlj7ffs7ZDV-yV9TOwgrnurLJiqtU6lK1RUeymGumZaM3SIp1-F3SyMVsUi6GZQdFJlDWJcrr8Fu9R80kU625cFO9QhEzD6DTMmoTZ_6f-AdOw1zM
+
+## Usage
+
+Open any URL in a browser to view the diagram. You can:
+1. View directly in browser
+2. Take a screenshot for documentation
+3. Use browser's "Save As" to save as SVG
+4. Convert SVG to PNG/PDF using online tools
+
+## Generated Files
+
+| File | Description |
+|------|-------------|
+| `tracker.kicad_pro` | KiCad project file |
+| `tracker.kicad_sch` | Schematic (placeholder) |
+| `tracker.kicad_pcb` | PCB layout (placeholder) |
+| `tracker.net` | KiCad netlist for import |
+| `README.md` | Project documentation |
+| `DIAGRAMS.md` | This file with SVG URLs |
