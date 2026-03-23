@@ -1,0 +1,66 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [main, feature/**]
+  pull_request:
+    branches: [main]
+
+env:
+  ESPUP_CACHE_DIR: ~/.espup
+  IDF_CACHE_DIR: ~/.cache/espressif
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: xtensa-esp32s3-none-elf
+          toolchain: esp
+
+      - name: Install ESP toolchain
+        run: |
+          cargo install espup
+          . $HOME/export-esp.sh || true
+          espup install -t esp32s3 --export-file $HOME/export-esp.sh || true
+
+      - name: Build firmware
+        run: |
+          . $HOME/export-esp.sh
+          cargo build --release
+
+      - name: Run tests
+        run: |
+          . $HOME/export-esp.sh
+          cargo test --lib
+
+  clippy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: xtensa-esp32s3-none-elf
+          toolchain: esp
+          components: clippy
+
+      - name: Install ESP toolchain
+        run: |
+          cargo install espup
+          . $HOME/export-esp.sh || true
+          espup install -t esp32s3 --export-file $HOME/export-esp.sh || true
+
+      - name: Run clippy
+        run: |
+          . $HOME/export-esp.sh
+          cargo clippy --all-targets --all-features -- -D warnings
