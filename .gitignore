@@ -5,10 +5,13 @@
 *.d
 *.o
 
+
 # Build directories
 build/
 dist/
 target/
+.embuild/
+target-esp/
 
 # IDE
 .vscode/

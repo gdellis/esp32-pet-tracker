@@ -51,22 +51,30 @@ See [DESIGN.md](DESIGN.md) for detailed software architecture.
 ├── DESIGN.md          # Full design document
 ├── PLAN.md            # Implementation plan
 ├── BOM.md             # Bill of materials
+├── DEPENDENCIES.md    # Required software and Rust crates
 ├── LICENSE            # Firmware: Personal Use Only
 ├── LICENSE-DESIGNS   # Docs/designs: CC BY-NC-SA 4.0
 ├── README.md          # This file
 ├── .markdownlint.json # Markdown linting config
 ├── .pre-commit-config.yaml
+├── Cargo.toml         # Rust dependencies
+├── build.rs           # Build script
+├── src/
+│   ├── lib.rs         # Library root
+│   ├── main.rs        # Application entry point
+│   └── error.rs       # Error types
 ├── base_station/      # Python base station (future)
-└── src/              # Rust firmware (future)
+└── kicad/            # Hardware designs
 ```
 
 ## Firmware
 
-Built with Rust + ESP-IDF. See [AGENTS.md](AGENTS.md) for development guidelines.
+Built with Rust + ESP-IDF. See [AGENTS.md](AGENTS.md) for development guidelines and [DEPENDENCIES.md](DEPENDENCIES.md) for required software.
 
 ```bash
-# Build for ESP32S3
-cargo build --release --target xtensa-esp32s3-elf
+# Install dependencies (see DEPENDENCIES.md for details)
+# Then build for ESP32S3:
+cargo build --release --target xtensa-esp32s3-espidf
 
 # Flash to device
 espflash flash /dev/ttyUSB0 --monitor
@@ -83,7 +91,7 @@ See [PLAN.md](PLAN.md) for implementation timeline.
 
 ## Status
 
-Design complete. Implementation not yet started.
+Design complete. Project scaffold initialized, firmware implementation in progress.
 
 ## References
 
