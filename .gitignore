@@ -6,11 +6,9 @@
 *.o
 
 # Build directories
-build/
+firmware/build/
 dist/
-target/
 .embuild/
-target-esp/
 
 # IDE
 .vscode/
@@ -38,7 +36,5 @@ env/
 node_modules/
 npm-debug.log
 
-# Kept for structure only
-# Do not commit empty dir
-
-kicad/**/*-backups/
+# Hardware backups
+hardware/**/*-backups/

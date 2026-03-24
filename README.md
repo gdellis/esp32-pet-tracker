@@ -1,14 +1,11 @@
 # Pet Tracker for ESP32
 
-[![Rust](https://img.shields.io/badge/Rust-1f425f.svg?logo=rust)](https://www.rust-lang.org/)
-[![Made with Rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg)](https://www.rust-lang.org/)
-[![ESP32](https://img.shields.io/badge/ESP32-000.svg?logo=espressif)](https://www.espressif.com/)
+[![C++](https://img.shields.io/badge/C++-00599C?logo=cpp)](https://isocpp.org/)
+[![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v5.3-green?logo=espressif)](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/)
 [![License: Personal Use Only](https://img.shields.io/badge/License-Personal%20Use%20Only-orange.svg)](LICENSE)
 [![CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE-DESIGNS)
-[![GitHub stars](https://img.shields.io/github/stars/gdellis/esp32-pet-tracker.svg?style=social)](https://github.com/gdellis/esp32-pet-tracker/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/gdellis/esp32-pet-tracker.svg?style=social)](https://github.com/gdellis/esp32-pet-tracker/network/members)
 
-ESP32-based pet tracker using LoRa radio to communicate with a home base station, which forwards data to the cloud. Built with Rust.
+ESP32-based pet tracker using LoRa radio to communicate with a home base station, which forwards data to the cloud.
 
 ## Features
 
@@ -16,7 +13,6 @@ ESP32-based pet tracker using LoRa radio to communicate with a home base station
 - **LoRa radio** (SX1262) for long-range communication to base station
 - **BLE fallback** for direct phone connectivity when in range
 - **Motion detection** via LIS3DH accelerometer for intelligent wake cycles
-- **Geofencing** with circular and polygon zone support
 - **Deep sleep** for maximum battery life
 - **Web UI** on base station for live tracking and configuration
 
@@ -24,59 +20,68 @@ ESP32-based pet tracker using LoRa radio to communicate with a home base station
 
 | Component | Part |
 |-----------|------|
-| MCU | Seeed Studio XIAO ESP32S3 |
+| MCU | ESP32-C6 (RISC-V) |
 | LoRa | Seeed Wio-SX1262 for XIAO (915 MHz) |
 | GPS | u-blox NEO-6M |
 | Accelerometer | LIS3DH |
 | Battery | LiPo 500mAh |
 
-See [DESIGN.md](DESIGN.md) for full hardware documentation.
+See [docs/hardware/DESIGN.md](docs/hardware/DESIGN.md) for full hardware documentation.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    T[Tracker<br/>ESP32S3] <-->|BLE| P[Phone]
+    T[Tracker<br/>ESP32C6] <-->|BLE| P[Phone]
     T -->|LoRa| B[Base Station<br/>Raspberry Pi]
     B -->|MQTT| H[(HiveMQ<br/>Broker)]
     B -->|HTTP| W[Web UI<br/>Flask]
 ```
 
-See [DESIGN.md](DESIGN.md) for detailed software architecture.
-
 ## Project Structure
 
 ```
-├── AGENTS.md          # Development guidelines for agents
-├── DESIGN.md          # Full design document
-├── PLAN.md            # Implementation plan
-├── BOM.md             # Bill of materials
-├── LICENSE            # Firmware: Personal Use Only
-├── LICENSE-DESIGNS   # Docs/designs: CC BY-NC-SA 4.0
-├── README.md          # This file
-├── .markdownlint.json # Markdown linting config
-├── .pre-commit-config.yaml
-├── base_station/      # Python base station (future)
-└── src/              # Rust firmware (future)
+esp32-pet-tracker/
+├── firmware/              # C++ ESP-IDF firmware
+│   ├── CMakeLists.txt
+│   ├── build.sh          # Docker-based build
+│   ├── sdkconfig.defaults
+│   └── main/
+│       └── main.cpp       # Application entry
+├── hardware/              # KiCad PCB designs & enclosure
+│   ├── tracker/          # Pet tracker PCB
+│   ├── base_station/     # Base station PCB
+│   └── enclosure/        # 3D printed case
+├── base_station/         # Python Flask web app
+├── docs/                 # Documentation
+│   ├── hardware/         # Hardware design docs
+│   ├── firmware/         # Firmware docs
+│   ├── datasheets/       # Component datasheets
+│   └── plans/            # Implementation plans
+├── third_party/          # Vendor libraries
+└── .github/workflows/     # CI/CD pipelines
 ```
 
 ## Firmware
 
-Built with Rust + ESP-IDF. See [AGENTS.md](AGENTS.md) for development guidelines.
+Built with C++ and ESP-IDF framework using Docker.
 
-### Prerequisits
+### Prerequisites
+
+- Docker
+
+### Build
 
 ```bash
-# Install toolchain
-rustup toolchain install stable --component rust-src --target riscv32imc-unknown-none-elf
+cd firmware
+./build.sh
 ```
 
-```bash
-# Build for ESP32S3
-cargo build --release --target xtensa-esp32s3-elf
+### Flash
 
-# Flash to device
-espflash flash /dev/ttyUSB0 --monitor
+```bash
+docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v5.3.1 \
+  sh -c ". /opt/esp/idf/export.sh && idf.py -p /dev/ttyACM0 flash monitor"
 ```
 
 ## Base Station
@@ -86,18 +91,16 @@ Python 3 on Raspberry Pi with:
 - SQLite database
 - Leaflet.js + OpenStreetMap for live tracking
 
-See [PLAN.md](PLAN.md) for implementation timeline.
+## Documentation
 
-## Status
-
-Design complete. Implementation not yet started.
-
-## References
-
-- [ESP-IDF Rust Book](https://docs.espressif.com/projects/rust/book/preface.html)
-- [esp-rs/awesome-esp-rust](https://github.com/esp-rs/awesome-esp-rust)
+| Document | Description |
+|----------|-------------|
+| [docs/hardware/DESIGN.md](docs/hardware/DESIGN.md) | Full hardware design |
+| [docs/hardware/BOM.md](docs/hardware/BOM.md) | Bill of materials |
+| [docs/plans/](docs/plans/) | Implementation plans |
+| [docs/firmware/DEPENDENCIES.md](docs/firmware/DEPENDENCIES.md) | Build dependencies |
 
 ## License
 
-- **Firmware** (`src/`, `base_station/`): [Personal Use Only](LICENSE)
-- **Documentation & Designs** (`DESIGN.md`, `BOM.md`, `PLAN.md`, `enclosure/`): [CC BY-NC-SA 4.0](LICENSE-DESIGNS)
+- **Firmware** (`firmware/`): [Personal Use Only](LICENSE)
+- **Hardware & Documentation** (`hardware/`, `docs/`): [CC BY-NC-SA 4.0](LICENSE-DESIGNS)
