@@ -64,6 +64,13 @@ See [DESIGN.md](DESIGN.md) for detailed software architecture.
 
 Built with Rust + ESP-IDF. See [AGENTS.md](AGENTS.md) for development guidelines.
 
+### Prerequisits
+
+```bash
+# Install toolchain
+rustup toolchain install stable --component rust-src --target riscv32imc-unknown-none-elf
+```
+
 ```bash
 # Build for ESP32S3
 cargo build --release --target xtensa-esp32s3-elf

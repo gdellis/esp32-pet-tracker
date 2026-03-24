@@ -1,4 +1,5 @@
 #![no_std]
+#![allow(unused_attributes)] // #![no_std] warning when used as module
 
 use esp_hal::gpio::{Input, InputConfig, Level, Output, OutputConfig, Pull};
 
@@ -38,33 +39,5 @@ impl Led {
 
     pub fn toggle(&mut self) {
         self.led.toggle();
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn led_initialization_compiles() {
-        // This test verifies the Led struct can be instantiated
-        // In real embedded context, we can't actually create hardware without a device
-        // This is a compile-time check
-        assert!(true);
-    }
-
-    #[test]
-    fn gpio_initialization_compiles() {
-        // This test verifies the Gpio struct can be instantiated
-        assert!(true);
-    }
-
-    #[test]
-    fn types_are_send_sync() {
-        // Verify our types are Send + Sync safe
-        fn assert_send<T: Send>() {}
-        fn assert_sync<T: Sync>() {}
-        // We can't actually call these without concrete types, but this
-        // documents the requirement
     }
 }

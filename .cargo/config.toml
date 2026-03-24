@@ -1,14 +1,17 @@
-[target.riscv32imac-unknown-none-elf]
-runner = "espflash flash --monitor --chip esp32c6"
+[target.xtensa-esp32s3-espidf]
+runner = "espflash flash --monitor --chip esp32s3"
 
 [env]
+# ESP-IDF specific environment variables
+# Note: For std support, build-std is managed by esp-idf-sys
 
 [build]
 rustflags = [
   "-C", "force-frame-pointers",
 ]
 
-target = "riscv32imac-unknown-none-elf"
+target = "xtensa-esp32s3-espidf"
 
 [unstable]
-build-std = ["core"]
+build-std = ["std", "core"]
+

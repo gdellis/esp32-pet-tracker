@@ -1,19 +1,37 @@
+[[bin]]
+harness = false # do not use the built-in cargo test harness -> resolve rust-analyzer errors
+name = "esp32-tracker"
+
+[lib]
+name = "esp32_tracker"
+path = "src/lib.rs"
+
+[build-dependencies]
+embuild = "0.33"
+
+[dependencies]
+# Remove `generic-queue-8` if you plan to use `embassy-time` WITH `embassy-executor`
+embassy-time = {version = "0.5.1", features = ["generic-queue-8"]}
+esp-bootloader-esp-idf = {version = "0.4.0", features = ["esp32s3"]}
+esp-hal = {version = "1.0.0", features = ["esp32s3"]}
+esp-idf-hal = {version = "0.46.0", default-features = false}
+esp-idf-svc = {version = "0.52.1", features = ["embassy-sync", "embassy-time-driver"]}
+log = "0.4"
+
 [package]
+authors = ["Glenn Ellis <gdellis@pm.me>"]
 edition = "2021"
 name = "esp32-tracker"
+resolver = "2"
 rust-version = "1.82"
 version = "0.1.0"
 
-[dependencies]
-esp-hal = { version = "1.0", features = ["esp32c6"] }
-esp-bootloader-esp-idf = { version = "0.4.0", features = ["esp32c6"] }
-critical-section = "1.2.0"
-log = "0.4"
-
-[build-dependencies]
+[patch.crates-io]
+critical-section = { git = "https://github.com/rust-embedded/critical-section.git", tag = "v1.2.0" }
 
 [profile.dev]
-opt-level = "s"
+debug = true # Symbols are nice, and they don't increase the size on Flash
+opt-level = "z"
 
 [profile.release]
 codegen-units = 1
