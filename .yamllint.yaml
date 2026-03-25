@@ -6,8 +6,11 @@ extends:
 
 rules:
   line-length:
-    max: 100
+    max: 200
     level: warning
   document-start: disable
   comments:
     min-spaces-from-content: 1
+  truthy:
+    allowed-values: ['true', 'false']
+    level: warning

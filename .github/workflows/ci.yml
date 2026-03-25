@@ -18,13 +18,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  IDF_VERSION: "v6.0"
+
 jobs:
   # Build ESP-IDF firmware (runs in Docker)
   build-firmware:
     name: Build Firmware
     runs-on: ubuntu-latest
 
-    container: espressif/idf:v6.0
+    container: espressif/idf:${{ env.IDF_VERSION }}
 
     steps:
       - name: Checkout
@@ -36,7 +39,15 @@ jobs:
           cd firmware
           idf.py build
 
-  # Host-based unit tests (runs on Ubuntu, no Docker)
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build
+          path: firmware/build
+          retention-days: 1
+
+  # Host-based unit tests
   host-tests:
     name: Host Tests
     runs-on: ubuntu-latest
@@ -45,33 +56,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache CMake
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/cmake
+          key: ${{ runner.os }}-cmake-${{ hashFiles('firmware/tests/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake build-essential
 
-      - name: Configure CMake
+      - name: Configure & Build tests
         run: |
           cd firmware/tests
           mkdir -p build && cd build
           cmake ..
-
-      - name: Build tests
-        run: |
-          cd firmware/tests/build
           make -j$(nproc)
 
-      - name: Run NMEA parser tests
+      - name: Run tests
         run: |
           cd firmware/tests/build
           ./test_nmea_parser
-
-      - name: Run button handler tests
-        run: |
-          cd firmware/tests/build
           ./test_button_handler
 
-  # C++ linting
+  # Lint C++
   lint-cpp:
     name: Lint C++
     runs-on: ubuntu-latest
@@ -80,24 +91,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install clang-format
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-cpplint-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format
-
-      - name: Install cpplint
-        run: |
-          pip install cpplint
+          sudo apt-get install -y clang-format shellcheck
+          pip install --break-system-packages cpplint
 
       - name: Run clang-format
         run: |
-          find firmware/main -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+          find firmware/main -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -print0 | xargs -0 clang-format --dry-run --Werror
 
       - name: Run cpplint
         run: |
-          find firmware/main -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs cpplint --recursive
+          find firmware/main -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) -print0 | xargs -0 cpplint --quiet
 
-  # Shell linting
+  # Lint Shell
   lint-shell:
     name: Lint Shell
     runs-on: ubuntu-latest
@@ -113,9 +129,9 @@ jobs:
 
       - name: Run shellcheck
         run: |
-          find . -name '*.sh' -not -path './.git/*' | xargs shellcheck
+          find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck
 
-  # Markdown linting
+  # Lint Markdown
   lint-markdown:
     name: Lint Markdown
     runs-on: ubuntu-latest
@@ -123,6 +139,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-markdownlint-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install markdownlint-cli2
         run: |
@@ -132,7 +156,7 @@ jobs:
         run: |
           markdownlint-cli2 '**/*.md' '.markdownlint.json'
 
-  # YAML linting
+  # Lint YAML
   lint-yaml:
     name: Lint YAML
     runs-on: ubuntu-latest
@@ -141,9 +165,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-yamllint-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install yamllint
         run: |
-          pip install yamllint
+          pip install --break-system-packages yamllint
 
       - name: Run yamllint
         run: |
