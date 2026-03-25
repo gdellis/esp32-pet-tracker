@@ -5,7 +5,7 @@ ESP32-C6 pet tracker firmware built with C++ and ESP-IDF framework.
 ## Project Overview
 
 - **Type**: Embedded C++ project (ESP32-C6)
-- **Stack**: C++, ESP-IDF v5.3, FreeRTOS, LoRa SX1262, GPS, BLE
+- **Stack**: C++, ESP-IDF v6.0, FreeRTOS, LoRa SX1262, GPS, BLE
 - **Target**: ESP32-C6 (RISC-V)
 - **Reference**: https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/
 
@@ -43,7 +43,7 @@ cd firmware
 ### Flash to Device
 
 ```bash
-docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v5.3.1 \
+docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v6.0 \
   sh -c ". /opt/esp/idf/export.sh && idf.py -p /dev/ttyACM0 flash monitor"
 ```
 
