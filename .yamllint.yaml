@@ -1,0 +1,13 @@
+# yamllint configuration
+# See https://yamllint.readthedocs.io/en/stable/configuration.html
+
+extends:
+  default
+
+rules:
+  line-length:
+    max: 100
+    level: warning
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1

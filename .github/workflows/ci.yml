@@ -1,23 +1,27 @@
-name: Build ESP-IDF Firmware
+name: CI
 
 on:
   push:
     branches: [main]
     paths:
       - 'firmware/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
+      - '.pre-commit-config.yaml'
   pull_request:
     branches: [main]
     paths:
       - 'firmware/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
+      - '.pre-commit-config.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Build ESP-IDF firmware (runs in Docker)
+  build-firmware:
+    name: Build Firmware
     runs-on: ubuntu-latest
 
     container: espressif/idf:v6.0
@@ -31,3 +35,116 @@ jobs:
           . /opt/esp/idf/export.sh
           cd firmware
           idf.py build
+
+  # Host-based unit tests (runs on Ubuntu, no Docker)
+  host-tests:
+    name: Host Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+
+      - name: Configure CMake
+        run: |
+          cd firmware/tests
+          mkdir -p build && cd build
+          cmake ..
+
+      - name: Build tests
+        run: |
+          cd firmware/tests/build
+          make -j$(nproc)
+
+      - name: Run NMEA parser tests
+        run: |
+          cd firmware/tests/build
+          ./test_nmea_parser
+
+      - name: Run button handler tests
+        run: |
+          cd firmware/tests/build
+          ./test_button_handler
+
+  # C++ linting
+  lint-cpp:
+    name: Lint C++
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Install cpplint
+        run: |
+          pip install cpplint
+
+      - name: Run clang-format
+        run: |
+          find firmware/main -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
+
+      - name: Run cpplint
+        run: |
+          find firmware/main -name '*.cpp' -o -name '*.hpp' -o -name '*.h' | xargs cpplint --recursive
+
+  # Shell linting
+  lint-shell:
+    name: Lint Shell
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: |
+          find . -name '*.sh' -not -path './.git/*' | xargs shellcheck
+
+  # Markdown linting
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install markdownlint-cli2
+        run: |
+          npm install -g markdownlint-cli2
+
+      - name: Run markdownlint-cli2
+        run: |
+          markdownlint-cli2 '**/*.md' '.markdownlint.json'
+
+  # YAML linting
+  lint-yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: |
+          pip install yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint .
