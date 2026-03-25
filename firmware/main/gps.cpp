@@ -6,7 +6,7 @@
 
 static const char* TAG = "gps";
 
-Gps::Gps(uart_port_t uart_num) 
+Gps::Gps(uart_port_t uart_num)
     : uart_num_(uart_num), data_({}) {}
 
 Gps::~Gps() {
@@ -20,11 +20,11 @@ bool Gps::init() {
     uart_config.parity = UART_PARITY_DISABLE;
     uart_config.stop_bits = UART_STOP_BITS_1;
     uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
-    
+
     ESP_ERROR_CHECK(uart_param_config(uart_num_, &uart_config));
     ESP_ERROR_CHECK(uart_set_pin(uart_num_, GPS_TX_PIN, GPS_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     ESP_ERROR_CHECK(uart_driver_install(uart_num_, GPS_BUFFER_SIZE * 2, 0, 0, NULL, 0));
-    
+
     ESP_LOGI(TAG, "GPS initialized on UART%d", uart_num_);
     return true;
 }
@@ -53,13 +53,13 @@ bool Gps::convert_to_gps_data(const NmeaData& nmea_data) {
     data_.speed = nmea_data.speed;
     data_.course = nmea_data.course;
     data_.satellites = nmea_data.satellites;
-    
+
     if (nmea_data.has_fix) {
         data_.fix_status = GpsFixStatus::FIX_3D;
         data_.timestamp = esp_timer_get_time();
     } else {
         data_.fix_status = GpsFixStatus::NONE;
     }
-    
+
     return true;
 }

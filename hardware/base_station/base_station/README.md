@@ -38,6 +38,7 @@ base_station/
 ## Setup
 
 1. Initialize the OPL submodule:
+
    ```bash
    git submodule update --init --recursive
    ```

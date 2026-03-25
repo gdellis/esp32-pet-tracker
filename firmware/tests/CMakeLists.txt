@@ -16,18 +16,18 @@ set(CATCH_CONFIG_FALLBACK_STRINGIFIER ON)
 FetchContent_MakeAvailable(catch2)
 
 add_executable(test_nmea_parser test_nmea_parser.cpp)
-target_include_directories(test_nmea_parser PRIVATE 
+target_include_directories(test_nmea_parser PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/../main
 )
 target_link_libraries(test_nmea_parser PRIVATE Catch2::Catch2WithMain)
 
-add_executable(test_button_handler test_button_handler.cpp 
+add_executable(test_button_handler test_button_handler.cpp
     src/esp_timer_mock.cpp
     src/gpio_mock.cpp
     ${CMAKE_SOURCE_DIR}/../main/button_handler.cpp
 )
-target_include_directories(test_button_handler PRIVATE 
+target_include_directories(test_button_handler PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/../main
 )
