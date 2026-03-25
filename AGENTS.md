@@ -1,12 +1,13 @@
 # AGENTS.md
 
-This is a Rust project for ESP32 (pet tracker).
+ESP32-C6 pet tracker firmware built with C++ and ESP-IDF framework.
 
 ## Project Overview
 
-- **Type**: Embedded Rust project (ESP32)
-- **Stack**: Rust, ESP-IDF, LoRa SX1262, GPS, BLE
-- **Reference**: https://docs.espressif.com/projects/rust/book/preface.html
+- **Type**: Embedded C++ project (ESP32-C6)
+- **Stack**: C++, ESP-IDF v5.3, FreeRTOS, LoRa SX1262, GPS, BLE
+- **Target**: ESP32-C6 (RISC-V)
+- **Reference**: https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/
 
 ## Agent Guidelines
 
@@ -14,122 +15,112 @@ For detailed guidelines, see:
 
 - [.agents/guides/](.agents/guides/) - Project-specific guides
 - [.agents/rules/](.agents/rules/) - Coding and workflow rules
-  - [rust.md](.agents/rules/rust.md) - Rust conventions
   - [git.md](.agents/rules/git.md) - Git workflow
   - [github.md](.agents/rules/github.md) - GitHub workflow
   - [markdown.md](.agents/rules/markdown.md) - Markdown guidelines
 
-## Pre-Commit Hooks
+## Project Structure
 
-Run before every commit:
-
-```bash
-pre-commit run --all-files
 ```
-
-This lints markdown files and checks for common issues. Fix any errors before committing.
+firmware/
+├── CMakeLists.txt       # ESP-IDF root CMake
+├── sdkconfig.defaults   # ESP-IDF configuration
+├── build.sh            # Docker-based build script
+└── main/
+    ├── CMakeLists.txt   # Main component
+    └── main.cpp         # Application entry
+```
 
 ## Build Commands
 
+### Using Docker (Recommended)
+
 ```bash
-# Build for ESP32 target
-cargo build --release --target xtensa-esp32-elf
+cd firmware
+./build.sh
+```
 
-# Build for ESP32-S3 (recommended for most ESP32-S3 boards)
-cargo build --release --target xtensa-esp32s3-elf
+### Flash to Device
 
-# Flash to device (adjust /dev/ttyUSB0 as needed)
-espflash flash /dev/ttyUSB0 --monitor
+```bash
+docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v5.3.1 \
+  sh -c ". /opt/esp/idf/export.sh && idf.py -p /dev/ttyACM0 flash monitor"
+```
 
-# Build with logging
-cargo build --release -vv
+### Manual Build (with ESP-IDF installed)
 
-# Release with ESP-specific optimizations
-cargo build --release --target xtensa-esp32s3-elf --features esp32s3
+```bash
+cd firmware
+idf.py build
+idf.py -p /dev/ttyACM0 flash monitor
 ```
 
 ## Code Style Guidelines
 
-### Rust Conventions
+### C++ Conventions
 
-- **Formatting**: Run `cargo fmt` before committing
-- **Linting**: Run `cargo clippy --all-targets --all-features -- -D warnings`
-- **Imports**: Use absolute paths with `use` statements at module top
+- **Formatting**: Follow ESP-IDF style (GNU brace style)
 - **Naming**:
-  - Types/Structs: `PascalCase` (e.g., `PetTracker`, `LocationData`)
-  - Functions/Variables: `snake_case` (e.g., `get_location`, `battery_level`)
-  - Constants: `SCREAMING_SNAKE_CASE` (e.g., `MAX_RETRIES`)
-  - Enums: `PascalCase` variants (e.g., `Status::Active`)
+  - Types/Classes: `PascalCase` (e.g., `GpioDriver`, `LedDriver`)
+  - Functions/Variables: `snake_case` (e.g., `get_pin()`, `led_state`)
+  - Constants: `SCREAMING_SNAKE_CASE` (e.g., `LED_PIN`, `MAX_RETRIES`)
 - **Line length**: Max 100 characters
-- **Docstrings**: Use `///` for public API docs, `//!` for module-level docs
-- **Error handling**: Use `Result<T, E>` for fallible operations; propagate with `?`
-- **No unwrap/expect in library code**: Return `Result` or use `unwrap_or`/`unwrap_or_else`
+- **Error handling**: Use `ESP_ERROR_CHECK()` for ESP-IDF errors
+- **C++ features**: Use classes for driver abstraction, avoid raw pointers
 
-### ESP32 Specific
+### ESP-IDF Specific
 
-- **Panics**: In embedded context, panics should be handled gracefully (often via `panic!` to reboot)
-- **Interrupts**: Keep interrupt handlers minimal; defer heavy work to main task
-- **Concurrency**: Use `critical-section` mutexes or `ESP-IDF` synchronization primitives
-- **Memory**: Avoid dynamic allocation where possible; prefer stack or static buffers
+- **Panics**: In embedded context, use `ESP_LOGW` or `ESP_LOGE` for errors
+- **Memory**: Avoid dynamic allocation; prefer stack or static buffers
+- **Concurrency**: Use FreeRTOS tasks and queues, not threads
 
-### Error Handling Pattern
-
-```rust
-// Preferred: Return Result for functions that can fail
-fn read_sensor() -> Result<SensorData, SensorError> {
-    // ... implementation
-}
-
-// For unrecoverable errors in embedded (system panic + reboot)
-fn fatal_error(message: &str) -> ! {
-    log::error!("{}", message);
-    esp_idf_hal::reset::restart();
-}
-```
-
-### Module Structure
+### Module Structure (Future)
 
 ```
-src/
-├── main.rs           # Application entry point
-├── lib.rs            # Library root (reusable components)
-├── wifi.rs           # WiFi functionality
-├── ble.rs            # Bluetooth Low Energy
-├── sensors.rs        # Sensor reading
-├── storage.rs        # NVS or flash storage
-└── error.rs          # Central error types
+main/
+├── main.cpp           # Application entry point
+├── gpio_driver.cpp    # GPIO abstraction
+├── led_driver.cpp     # LED driver
+├── button_handler.cpp # Button debounce
+├── ble.cpp            # Bluetooth Low Energy
+├── gps.cpp            # GPS parsing
+├── lora.cpp           # LoRa SX1262 driver
+└── config.h           # Configuration constants
 ```
+
+## Hardware Configuration
+
+| Pin | Function | Notes |
+|-----|----------|-------|
+| GPIO8 | LED | Active high |
+| GPIO9 | Button | Active low (pulled up) |
+| GPIO4 | LoRa TX | |
+| GPIO5 | LoRa RX | |
+| GPIO6 | LoRa Reset | |
+| GPIO7 | GPS TX | |
+| GPIO15 | GPS RX | |
 
 ## Testing
 
 ```bash
-# Run all tests
-cargo test
-
-# Run tests for a specific module
-cargo test sensor
-
-# Run tests with output
-cargo test -- --nocapture
-
-# Run doc tests
-cargo test --doc
-
-# Run integration tests (tests/ directory)
-cargo test --test integration
+# Build and run tests
+idf.py build
+idf.py test
 ```
 
 ## Common Issues
 
-- **ESP32 toolchain**: Ensure `xtensa-esp32-elf` target is installed: `rustup target add xtensa-esp32-elf`
-- **espflash**: Install via `cargo install espflash`
-- **WIFI/BLE concurrency**: ESP-IDF has specific requirements for WiFi + BLE coexistence
-- **Deep sleep**: Handle wake-up sources properly in `entry` point
+- **Docker build**: Ensure Docker is running and you have permissions
+- **Port access**: Add user to `docker` group or use `sudo`
+- **Flash**: Ensure device is in download mode (hold BOOT, press RESET)
+- **Monitor**: Use `idf.py monitor` to view serial output
 
-## Dependencies to Know
+## Dependencies (ESP-IDF Components)
 
-- `esp-idf-svc`: ESP-IDF service layer bindings
-- `esp-idf-hal`: Hardware abstraction layer
-- `esp-idf-macros`: Procedural macros for ESP
-- `embedded-svc`: Embedded services trait definitions
-- `anyhow` / `thiserror`: For error handling (app level, not embedded)
+- `driver` - GPIO, UART, SPI, I2C
+- `freertos` - Real-time OS
+- `esp_timer` - High-resolution timer
+- `esp_log` - Logging
+- `nvs_flash` - Non-volatile storage
+- `esp_bt` - Bluetooth
+- `esp_wifi` - WiFi

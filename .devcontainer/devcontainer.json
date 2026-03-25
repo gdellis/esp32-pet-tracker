@@ -1,0 +1,22 @@
+{
+    "name": "ESP32 Pet Tracker",
+    "image": "espressif/idf:v5.3.1",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "espressif.esp-idf-extension"
+            ],
+            "settings": {
+                "idf.adapterTarget.name": "esp32c6",
+                "idf.customExtraPaths": "",
+                "idf.customExtraVars": "",
+                "idf.espIdfPath": "/opt/esp/idf",
+                "idf.pythonBinPath": "/opt/esp/python_env/idf5.3_py3.10_env/bin/python",
+                "cSpell.extraPaths": "${workspaceFolder}/firmware/build/config",
+                "C_Cpp.default.configurationProvider": "ms-vscode.cpptools"
+            }
+        }
+    },
+    "postCreateCommand": "bash scripts/get ESP_IDF || true",
+    "postStartCommand": "bash scripts/get_idf_size || true"
+}
