@@ -69,6 +69,7 @@ LiPo (3.7V) → TP4056 (USB-C charging) → MCP1700 (3.3V LDO) → XIAO + LoRa
 ## Setup
 
 1. Initialize submodules (OPL library for Seeed Studio components):
+
    ```bash
    git submodule update --init --recursive
    ```

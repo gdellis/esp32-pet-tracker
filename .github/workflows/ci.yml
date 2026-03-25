@@ -1,23 +1,103 @@
-name: Build ESP-IDF Firmware
+name: CI
 
 on:
   push:
     branches: [main]
     paths:
       - 'firmware/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
+      - '.pre-commit-config.yaml'
   pull_request:
     branches: [main]
     paths:
       - 'firmware/**'
-      - '.github/workflows/ci.yml'
+      - '.github/workflows/**'
+      - '.pre-commit-config.yaml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  # Lint C++ (non-blocking - clang-format style differs from ESP-IDF conventions)
+  lint-cpp:
+    name: Lint C++
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-clang-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install clang-format
+        run: |
+          pip install --break-system-packages clang-format
+
+      - name: Run clang-format
+        run: |
+          find firmware/main -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) \
+            -print0 | xargs -0 clang-format --dry-run --Werror 2>&1 \
+            || echo "clang-format warnings (ESP-IDF uses GNU style)"
+
+  # Lint Shell
+  lint-shell:
+    name: Lint Shell
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: |
+          find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck
+
+  # Lint Markdown
+  lint-markdown:
+    name: Lint Markdown
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-markdownlint-${{ hashFiles('.github/workflows/ci.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install markdownlint-cli2
+        run: |
+          npm install -g markdownlint-cli2
+
+      - name: Run markdownlint-cli2
+        run: |
+          markdownlint-cli2 '**/*.md' '.markdownlint.json' \
+            '!firmware/tests/build/**' \
+            '!firmware/build/**' \
+            '!third_party/**'
+
+  # Build ESP-IDF firmware (runs in Docker)
+  build-firmware:
+    name: Build Firmware
     runs-on: ubuntu-latest
 
     container: espressif/idf:v6.0
@@ -31,3 +111,46 @@ jobs:
           . /opt/esp/idf/export.sh
           cd firmware
           idf.py build
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-build
+          path: firmware/build
+          retention-days: 1
+
+  # Host-based unit tests
+  host-tests:
+    name: Host Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache CMake
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/cmake
+          key: ${{ runner.os }}-cmake-${{ hashFiles('firmware/tests/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential
+
+      - name: Configure & Build tests
+        run: |
+          cd firmware/tests
+          mkdir -p build && cd build
+          cmake ..
+          make -j$(nproc)
+
+      - name: Run tests
+        run: |
+          cd firmware/tests/build
+          ./test_nmea_parser
+          ./test_button_handler

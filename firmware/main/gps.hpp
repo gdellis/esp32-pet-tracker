@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "driver/uart.h"
 #include "esp_event.h"
+#include "nmea_parser.hpp"
 
 #define GPS_UART_NUM UART_NUM_1
 #define GPS_TX_PIN GPIO_NUM_7
@@ -39,10 +40,7 @@ public:
 
 private:
     bool parse_nmea(const char* nmea, size_t len);
-    bool parse_gga(const char* nmea);
-    bool parse_rmc(const char* nmea);
-    bool validate_checksum(const char* nmea, size_t len);
-    int parse_field(const char* nmea, int field_idx, char* out, size_t out_len);
+    bool convert_to_gps_data(const NmeaData& nmea_data);
 
     uart_port_t uart_num_;
     GpsData data_;

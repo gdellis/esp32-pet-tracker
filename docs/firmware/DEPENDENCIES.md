@@ -5,116 +5,117 @@
 ### System Dependencies (Linux/Ubuntu)
 
 ```bash
-sudo apt-get install -y gcc build-essential curl pkg-config
+sudo apt-get install -y gcc build-essential cmake python3 git
 ```
 
-### Rust & ESP Toolchain
+### ESP-IDF v6.0
 
-#### Installation
+#### Installation (Using Docker - Recommended)
+
+The project uses Docker for consistent builds:
 
 ```bash
-# 1. Install espup
-cargo install espup
-
-# 2. Install ESP32S3 target
-rm -rf ~/.espup
-espup install -t esp32s3 --export-file ~/export-esp.sh
-
-# 3. Source environment
-. ~/export-esp.sh
+cd firmware
+./build.sh
 ```
 
-### Target Triple
+#### Manual Installation
 
-Use `xtensa-esp32s3-espidf` for ESP32S3 with ESP-IDF.
+```bash
+# Clone ESP-IDF
+git clone -b v6.0 --recursive https://github.com/espressif/esp-idf.git ~/.espressif/v6.0/esp-idf
+
+# Install dependencies
+~/.espressif/v6.0/esp-idf/install.sh
+
+# Export environment
+source ~/.espressif/v6.0/esp-idf/export.sh
+```
 
 ---
 
 ## Build Commands
 
-### Standard Build (requires target pre-installed)
+### Docker Build (Recommended)
 
 ```bash
-. ~/export-esp.sh
-cargo +esp build --release --target xtensa-esp32s3-espidf
+cd firmware
+./build.sh
 ```
 
-### Build from Source (builds std library for target)
+### Manual Build
 
 ```bash
-. ~/export-esp.sh
-cargo +esp build --release --target xtensa-esp32s3-espidf -Zbuild-std=std
+source ~/.espressif/v6.0/esp-idf/export.sh
+cd firmware
+idf.py build
+```
+
+### Flash to Device
+
+```bash
+source ~/.espressif/v6.0/esp-idf/export.sh
+idf.py -p /dev/ttyACM0 flash monitor
 ```
 
 ---
 
-## Rust Crates
+## ESP-IDF Components Used
 
-| Crate | Version | Purpose |
-|-------|---------|---------|
-| `esp-idf-svc` | 0.52 | ESP-IDF service layer (WiFi, BLE, etc.) |
-| `esp-idf-hal` | 0.46 | Hardware abstraction layer |
-| `esp-idf-sys` | 0.37 | ESP-IDF bindings |
-| `nmea0183` | 0.6 | NMEA 0183 GPS parsing |
-| `lis3dh` | 0.4 | LIS3DH accelerometer driver |
-| `lora-phy` | 3 | LoRa PHY layer (supports SX1262) |
-| `anyhow` | 1.0 | Error handling |
-| `log` | 0.4 | Logging facade |
-| `thiserror` | 1.0 | Error derive macros |
+| Component | Version | Purpose |
+|-----------|---------|---------|
+| `driver` | v6.0 | GPIO, UART, SPI, I2C |
+| `freertos` | v6.0 | Real-time OS |
+| `esp_timer` | v6.0 | High-resolution timer |
+| `esp_log` | v6.0 | Logging |
+| `nvs_flash` | v6.0 | Non-volatile storage |
+| `esp_bt` | v6.0 | Bluetooth (optional) |
 
 ---
 
-## Verified Cargo.toml
+## Testing Dependencies
 
-```toml
-[package]
-name = "esp32-tracker"
-version = "0.1.0"
-edition = "2021"
+### Host-Based Unit Tests
 
-[dependencies]
-esp-idf-svc = "0.52"
-esp-idf-hal = "0.46"
-esp-idf-sys = "0.37"
-nmea0183 = "0.6"
-lis3dh = "0.4"
-lora-phy = "3"
-anyhow = "1.0"
-log = "0.4"
-thiserror = "1.0"
+Tests run on Linux without hardware using mocked ESP-IDF headers.
 
-[build-dependencies]
-
-[profile.release]
-opt-level = "s"
-lto = true
+```bash
+cd firmware/tests
+mkdir -p build && cd build
+cmake .. && make -j$(nproc)
+./test_nmea_parser    # NMEA parsing (43 assertions)
+./test_button_handler # Button debounce (4 assertions)
 ```
+
+### Catch2
+
+Catch2 v3.4.0 is fetched via CMake FetchContent - no separate installation needed.
 
 ---
 
 ## Troubleshooting
 
-### "can't find crate for `core`"
+### "No such file or directory: espressif/idf:v6.0"
 
-The target isn't installed. Use the `-Zbuild-std=std` flag to build from source:
+Use the correct Docker image tag:
 
 ```bash
-cargo +esp build --release --target xtensa-esp32s3-espidf -Zbuild-std=std
+docker run --rm -it espressif/idf:v6.0
 ```
 
-### Build hangs on "Compiling core"
+### "idf.py: command not found"
 
-Let it run - the first build from source takes 10+ minutes as it compiles the entire Rust standard library for the Xtensa target.
-
-### "toolchain 'esp' does not support components"
-
-This is expected. The espup toolchain doesn't support `rustup target add`. Use `-Zbuild-std=std` instead.
-
-### "failed to run espup install"
-
-Clean the espup cache:
+Source the ESP-IDF environment:
 
 ```bash
-rm -rf ~/.espup
-espup install -t esp32s3
+source ~/.espressif/v6.0/esp-idf/export.sh
+```
+
+### "Permission denied" on /dev/ttyACM0
+
+Add user to dialout group:
+
+```bash
+sudo usermod -a -G dialout $USER
+# Log out and back in for changes to take effect
 ```

@@ -1,8 +1,8 @@
-# Pet Tracker ESP32 Design
+# Pet Tracker ESP32-C6 Design
 
 ## Overview
 
-An ESP32-based pet tracker using LoRa radio to communicate with a home base station,
+An ESP32-C6-based pet tracker using LoRa radio to communicate with a home base station,
 which forwards data to the cloud. The device sleeps deeply between updates to maximize
 battery life, waking only to acquire GPS and transmit.
 
@@ -13,28 +13,15 @@ cloud connectivity for remote monitoring via mobile app.
 
 ## Hardware
 
-### Main Board: Seeed Studio XIAO ESP32S3 + Wio-SX1262 Kit
+### Main Board: ESP32-C6 (RISC-V)
 
-**Option 1: Pre-assembled Kit** (Recommended)
+**Target**: ESP32-C6-WROOM-1C or compatible module
 
-Seeed Studio sells a [XIAO ESP32S3 + Wio-SX1262 kit](https://www.seeedstudio.com/Wio-SX1262-with-XIAO-ESP32S3-p-5982.html) ($9.90) with everything on one board:
-
-- **MCU**: ESP32-S3 (Xtensa, 240 MHz, with FPU)
-- **LoRa**: SX1262 (868/915 MHz)
-- **Built-in power management** chip
-- **Interfaces**: IIC, UART, GPIO for GPS/sensor expansion
-- **Size**: 21 x 17.5 mm (thumb-sized)
-- **Meshtastic compatible** — can leverage existing firmware
-
-**Option 2: Discrete Components**
-
-Purchase separately:
-- Seeed Studio XIAO ESP32S3
-- Seeed Wio-SX1262 for XIAO
-- More flexibility but more assembly effort
-
-> **KiCad Library**: Seeed Studio provides an [Open Parts Library (OPL) KiCad
-> library](https://github.com/Seeed-Studio/OPL_Kicad_Library/tree/master/Seeed%20Studio%20Wio%20SX1262%20for%20XIAO%20ESP32S3) with the Wio SX1262 component, footprint, and 3D model.
+- **MCU**: ESP32-C6 (RISC-V, 160 MHz, with RISC-V vectoring)
+- **LoRa**: SX1262 (868/915 MHz) via SPI
+- **Interfaces**: SPI, UART, I2C, GPIO for GPS/sensor expansion
+- **Size**: ~20x20mm module
+- **Deep sleep current**: ~10-20 µA (CPU off, RTC memory retained)
 
 ### GPS Module: u-blox NEO-6M (or compatible)
 
@@ -46,22 +33,29 @@ Purchase separately:
 - **Active current**: ~20–25 mA during acquisition
 - **Sleep current**: ~1 mA (if supported)
 
-**Pin Mapping (XIAO → GPS)**:
+**Pin Mapping (ESP32-C6 → GPS)**:
 
-| XIAO Pin | GPS Module | Function |
-|----------|------------|----------|
-| D4 (GPIO20) | TX | GPS data out → XIAO RX |
-| D5 (GPIO21) | RX | XIAO data out → GPS TX |
+| ESP32-C6 Pin | GPS Module | Function |
+|--------------|------------|----------|
+| GPIO7 (UART1 TX) | RX | ESP data out → GPS TX |
+| GPIO15 (UART1 RX) | TX | GPS data out → ESP RX |
 | 3V3 | VCC | Power (or via LDO if needed) |
 | GND | GND | Ground |
 
-**Alternative GPS modules**:
+**Note**: NEO-6M draws significant current. Use a GPIO-controlled power switch to completely cut power between GPS fixes.
 
-- **MAX-M10S**: Lower power (~15 mA), faster fix, U-blox M10 platform
-- **Quectel L76B**: Integrated, cheaper, but higher power
-- **ATGM336H**: Very cheap, adequate for pet tracker use case
+### LoRa Radio: SX1262
 
-**Note**: NEO-6M is 3.3V compatible but draws significant current. Consider using a GPIO-controlled power switch to completely cut power between GPS fixes.
+**Pin Mapping (ESP32-C6 → SX1262)**:
+
+| ESP32-C6 Pin | SX1262 | Function |
+|--------------|--------|----------|
+| GPIO4 | SPI MOSI | Data out |
+| GPIO5 | SPI MISO | Data in |
+| GPIO6 | SPI CLK | Clock |
+| GPIO1 | NSS | Chip select |
+| GPIO2 | Reset | Reset line |
+| GPIO3 | DIO1 | Interrupt/done |
 
 ### Power Management
 
@@ -70,14 +64,14 @@ Purchase separately:
 - **Power switch**: GPIO-controlled MOSFET to cut GPS power when not in use
 - **Sleep current target**:
   - SX1262: ~1 µA (very low, LoRa radio itself)
-  - ESP32-S3 deep sleep: ~10–20 µA (CPU off, RTC memory retained)
+  - ESP32-C6 deep sleep: ~10–20 µA (CPU off, RTC memory retained)
   - GPS: Must be powered off completely (no true sleep on NEO-6M)
   - **Total target in deep sleep**: < 50 µA
 
 **Power architecture**:
 
 ```
-LiPo (3.7V) → MCP1700 (3.3V) → XIAO + Wio-SX1262
+LiPo (3.7V) → MCP1700 (3.3V) → ESP32-C6 + SX1262
                     ↓
             GPIO-controlled switch → GPS module
                     ↓
@@ -86,11 +80,11 @@ LiPo (3.7V) → MCP1700 (3.3V) → XIAO + Wio-SX1262
 
 ### Other Components
 
-- **Indicator LED**: Single RGB or single-color LED for status (low current, ~5 mA)
-- **Reset button**: Tactile button for manual reset
-- **Antenna connectors**: U.FL for LoRa (Wio-SX1262 has built-in U.FL)
+- **Indicator LED**: Single LED on GPIO8 (active high)
+- **Reset button**: Tactile button on GPIO9 (active low, pulled up)
+- **Antenna connectors**: U.FL for LoRa
 - **Accelerometer**: LIS3DH (I2C) for motion detection — wakes device when pet moves
-- **3D printed enclosure**: Custom case for XIAO + Wio-SX1262 + GPS + LIS3DH + battery
+- **3D printed enclosure**: Custom case for ESP32-C6 + SX1262 + GPS + LIS3DH + battery
   - Consider: PETG or ABS for durability
   - Needs antenna clearance (LoRa U.FL antenna on top of stack)
   - Waterproofing: **silicone gasket** (reusable, adjustable, good seal)
@@ -142,72 +136,76 @@ stateDiagram-v2
 ### Module Structure
 
 ```
-src/
-├── main.rs           # Boot, initialization, main task
-├── lib.rs            # Library root, shared types, error types
-├── gps.rs            # GPS parsing (NMEA), location data types
-├── lora/
-│   ├── mod.rs        # LoRa trait/interface + shared types
-│   └── sx1262.rs     # SX1262 driver implementation
-├── power.rs          # Sleep, wake sources, battery monitoring
-├── accelerometer.rs  # LIS3DH I2C driver for motion detection
-├── ble.rs            # BLE GATT server for direct phone connectivity
-├── geofence.rs       # Geofence checking (circle/polygon)
-├── config.rs         # NVS storage for device config
-└── error.rs          # Error types
+firmware/
+├── CMakeLists.txt           # ESP-IDF root CMake
+├── sdkconfig.defaults      # ESP-IDF configuration
+├── build.sh                 # Docker-based build script
+├── main/
+│   ├── main.cpp             # Boot, initialization, main task
+│   ├── gpio_driver.cpp      # GPIO abstraction
+│   ├── led_driver.cpp       # LED driver
+│   ├── button_handler.cpp   # Button debounce
+│   ├── gps.cpp              # GPS UART driver
+│   ├── nmea_parser.hpp      # Header-only NMEA parsing (testable on host)
+│   └── deep_sleep.hpp       # Deep sleep utility
+└── tests/                   # Host-based unit tests with mocks
 ```
 
 ### Key Interfaces
 
-**GPS Module** (`gps.rs`):
+**GPS Module** (`gps.cpp`, `nmea_parser.hpp`):
 
-```rust
-pub struct GpsData {
-    pub latitude:  i32,  // degrees * 1e6
-    pub longitude: i32,  // degrees * 1e6
-    pub altitude:  u16,  // meters
-    pub valid:    bool,
-    pub timestamp: u32, // Unix epoch
-}
+```cpp
+struct GpsData {
+    int32_t latitude;    // degrees * 1e6
+    int32_t longitude;   // degrees * 1e6
+    int32_t altitude;    // meters * 100 (cm)
+    bool valid;          // Fix valid
+    uint32_t timestamp;  // Unix epoch
+};
 
-pub trait GpsDriver {
-    fn power_on(&mut self) -> Result<()>;
-    fn power_off(&mut self) -> Result<()>;
-    fn read_fix(&mut self, timeout_ms: u32) -> Result<GpsData>;
-}
+class GpsDriver {
+public:
+    GpsDriver(gpio_num_t tx_pin, gpio_num_t rx_pin);
+    void power_on();
+    void power_off();
+    GpsData read_fix(uint32_t timeout_ms);
+};
 ```
 
-**LoRa Driver** (`lora/mod.rs`):
+**LoRa Driver** (future):
 
-```rust
-pub struct RadioPacket {
-    pub device_id:  u32,
-    pub latitude:   i32,
-    pub longitude:  i32,
-    pub altitude:   u16,
-    pub battery_mv: u16,
-    pub flags:      u8,
-    pub timestamp:  u32,
-}
+```cpp
+struct RadioPacket {
+    uint32_t device_id;
+    int32_t latitude;    // degrees * 1e6
+    int32_t longitude;   // degrees * 1e6
+    int32_t altitude;    // meters * 100 (cm)
+    uint16_t battery_mv;
+    uint8_t flags;
+    uint32_t timestamp;
+};
 
-pub trait LoRaDriver {
-    fn init(&mut self) -> Result<()>;
-    fn send(&mut self, packet: &RadioPacket) -> Result<()>;
-    fn sleep(&mut self) -> Result<()>;
-}
+class LoRaDriver {
+public:
+    LoRaDriver();
+    esp_err_t init();
+    esp_err_t send(const RadioPacket& packet);
+    esp_err_t sleep();
+};
 ```
 
-**Power Management** (`power.rs`):
+**Power Management** (`deep_sleep.hpp`):
 
-```rust
-pub enum WakeSource {
-    Timer(u32),        // RTC timer, duration in ms
+```cpp
+enum class WakeSource {
+    Timer(uint32_t duration_ms),
     GpsTimeout,
     Button,
-}
+};
 
-pub fn enter_deep_sleep(wake_source: WakeSource) -> !;
-pub fn get_battery_voltage() -> u16;  // mV
+void enter_deep_sleep(WakeSource source);
+uint16_t get_battery_voltage();  // mV
 ```
 
 ### State Machine Detail
@@ -237,15 +235,15 @@ pub fn get_battery_voltage() -> u16;  // mV
 
 ### Timing Configuration
 
-```rust
+```cpp
 // Configurable constants
-const GPS_TIMEOUT_MS: u32 = 60_000;        // 60 seconds max GPS acquisition
-const TX_RETRIES: u8 = 3;
-const TX_TIMEOUT_MS: u32 = 5_000;         // Per retry timeout
+static constexpr uint32_t GPS_TIMEOUT_MS = 60_000;     // 60 seconds max GPS acquisition
+static constexpr uint8_t TX_RETRIES = 3;
+static constexpr uint32_t TX_TIMEOUT_MS = 5_000;       // Per retry timeout
 
 // Default wake intervals (stored in NVS, configurable)
-const DEFAULT_SLEEP_INTERVAL_MS: u32 = 60_000;  // 1 minute when moving
-const STATIONARY_SLEEP_INTERVAL_MS: u32 = 300_000;  // 5 minutes when stationary
+static constexpr uint32_t DEFAULT_SLEEP_INTERVAL_MS = 60_000;    // 1 minute when moving
+static constexpr uint32_t STATIONARY_SLEEP_INTERVAL_MS = 300_000; // 5 minutes when stationary
 ```
 
 ### Startup Sequence
@@ -253,38 +251,37 @@ const STATIONARY_SLEEP_INTERVAL_MS: u32 = 300_000;  // 5 minutes when stationary
 1. **Boot** (ROM bootloader → ESP-IDF bootloader)
 2. **Early init**: Configure cache, CPU frequency, Flash
 3. **ESP-IDF components init**: System, WiFi (disabled), Bluetooth (disabled)
-4. **Rust runtime init**: Global allocator, panic handler
-5. **Driver init**:
+4. **Driver init**:
    - Configure GPIO (power switch, LED, button)
    - Initialize SX1262 (but keep in sleep)
    - Initialize GPS (keep powered off)
-6. **Read config** from NVS (device_id, sleep intervals, geofences)
-7. **Check wake source**: Timer vs button vs reset
-8. **Enter main loop** or **deep sleep**
+5. **Read config** from NVS (device_id, sleep intervals, geofences)
+6. **Check wake source**: Timer vs button vs reset
+7. **Enter main loop** or **deep sleep**
 
 ### Error Handling
 
-```rust
-#[derive(Debug, Clone, Copy)]
-pub enum TrackerError {
+```cpp
+enum class TrackerError {
     GpsNoFix,
     GpsTimeout,
     LoraTxFailed,
     LoraNoAck,
     NvsError,
     InvalidConfig,
-}
+};
 
-impl TrackerError {
-    pub fn is_recoverable(&self) -> bool {
-        matches!(self, GpsNoFix | GpsTimeout | LoraTxFailed | LoraNoAck)
-    }
+constexpr bool is_recoverable(TrackerError err) {
+    return err == TrackerError::GpsNoFix ||
+           err == TrackerError::GpsTimeout ||
+           err == TrackerError::LoraTxFailed ||
+           err == TrackerError::LoraNoAck;
 }
 ```
 
 - **Recoverable errors**: Log, continue (e.g., no GPS fix → transmit with valid=false)
 - **Unrecoverable errors**: Panic and reboot (e.g., NVS corruption)
-- All errors logged via `log::error!` for diagnostics
+- All errors logged via `ESP_LOGW`/`ESP_LOGE` for diagnostics
 
 ### Configuration Storage (NVS)
 
@@ -310,7 +307,7 @@ Minimal interrupt handlers in embedded context:
 - **LIS3DH INT1**: Motion detected interrupt (wake on movement)
 - **SX1262 DIO1**: Packet TX/RX done interrupt (optional, polling also works)
 
-All heavy processing deferred to main task.
+All heavy processing deferred to main task via FreeRTOS queues.
 
 ### Base Station (Python on Raspberry Pi)
 
@@ -397,8 +394,8 @@ flowchart TB
 ### Memory Considerations
 
 - **Stack**: Keep stack usage minimal in ISRs. Main task stack ~4KB
-- **Heap**: Dynamic allocation only for packet buffers, GPS NMEA parsing
-- **Static**: All drivers and state machine data as static globals
+- **Heap**: Avoid dynamic allocation; prefer static buffers and stack-only
+- **Static**: All drivers and state machine data as static globals or singleton classes
 - **No malloc in ISR context**: Use static buffers or stack-only allocations
 
 ### LoRa Protocol
@@ -412,24 +409,23 @@ Point-to-point LoRa from tracker to base station.
 | device_id       | 4 B    | Unique device identifier            |
 | latitude        | 4 B    | Fixed-point (e.g., deg * 1e6)       |
 | longitude       | 4 B    | Fixed-point (e.g., deg * 1e6)       |
-| altitude        | 2 B    | Meters (uint16)                     |
+| altitude        | 4 B    | Centimeters (int32)                 |
 | battery_mv      | 2 B    | Battery voltage in millivolts       |
 | status_flags    | 1 B    | GPS fix valid, moving, etc.        |
-| timestamp       | 3 B    | Unix epoch (seconds, mod 24h)      |
+| timestamp       | 4 B    | Unix epoch (seconds)               |
 
-**Note**: ESP32-C3 has no built-in RTC. Use Unix timestamp from GPS or NTP sync when WiFi is available.
+**Note**: ESP32-C3/C6 has no built-in RTC. Use Unix timestamp from GPS or NTP sync when WiFi is available.
 
 ### Base Station (separate firmware or software)
 
 - Raspberry Pi with Wio-SX1262 or LoRa-E5
-- Another XIAO ESP32S3 with stacked Wio-SX1262 makes an excellent base station
+- Another ESP32-C6 with stacked SX1262 makes an excellent base station
 - Receives packets from tracker via LoRa
 - Forwards via WiFi to cloud (MQTT or HTTP)
-- Could also act as a LoRaWAN gateway for multiple trackers
 
 **Base station firmware options**:
 
-1. **XIAO ESP32S3 + Wio-SX1262**: Compact, runs ESP-IDF, same LoRa driver as tracker
+1. **ESP32-C6 + SX1262**: Compact, runs ESP-IDF, same LoRa driver as tracker
 2. **Raspberry Pi + LoRa hat**: More compute headroom for complex gateway logic
 3. **ESP32 + LoRa-E5**: Simpler firmware but higher sleep current on E5
 
@@ -457,10 +453,10 @@ Point-to-point LoRa from tracker to base station.
 **Packet format** (same as tracker-to-base):
 
 ```
-[device_id: 4][lat: 4][lon: 4][alt: 2][battery_mv: 2][flags: 1][timestamp: 3] = 20 bytes
+[device_id: 4][lat: 4][lon: 4][alt: 4][battery_mv: 2][flags: 1][timestamp: 4] = 23 bytes
 ```
 
-With SF7 + BW125k, ~20 bytes transmits in ~50–100 ms. At +17 dBm, TX current ~120 mA.
+With SF7 + BW125k, ~23 bytes transmits in ~50–100 ms. At +17 dBm, TX current ~120 mA.
 
 ---
 
@@ -478,7 +474,7 @@ With SF7 + BW125k, ~20 bytes transmits in ~50–100 ms. At +17 dBm, TX current ~
 - Use haversine formula for accurate distance on sphere
 - **On breach**: Set flag in next transmission, trigger alert from cloud
 
-**Compute constraint**: ESP32-C3 has no FPU. Use integer math or lookup tables for haversine. Consider offloading geofence check to base station or cloud if compute is tight.
+**Compute constraint**: ESP32-C6 is RISC-V but no FPU. Use integer math or lookup tables for haversine. Consider offloading geofence check to base station or cloud if compute is tight.
 
 ---
 
@@ -631,18 +627,21 @@ For the base station carrier board with Raspberry Pi header:
 
 ## TODO Before Build
 
-- [x] ~~Select final board~~ → **XIAO ESP32S3** (FPU, BLE, more RAM)
-- [x] ~~Select LoRa radio~~ → **Wio-SX1262** (SX1262, low power SPI)
+- [x] ~~Select final board~~ → **ESP32-C6** (RISC-V, BLE, low power)
+- [x] ~~Select LoRa radio~~ → **SX1262** (low power SPI)
 - [x] ~~Select base station~~ → **Python on Raspberry Pi** with LoRa hat
 - [x] ~~Select MQTT broker~~ → **HiveMQ** (self-hosted)
 - [x] ~~Select GPS module~~ → **NEO-6M** (cheap, reliable, 25 mA)
 - [x] ~~Select LoRa frequency~~ → **915 MHz (US)**
 - [x] ~~Select waterproofing~~ → **Silicone gasket** (reusable, good seal)
+- [x] ~~Implement deep sleep feature~~ → Merged PR #1
+- [x] ~~Implement GPS driver with NMEA parsing~~ → Merged PR #2
+- [x] ~~Implement unit tests with mocks~~ → PR #3
 - [ ] Design power supply (charger + LDO + power switch for GPS)
-- [ ] Verify Wio-SX1262 pin mapping with actual board
+- [ ] Verify SX1262 pin mapping with actual board
 - [ ] Order components:
-  - [ ] XIAO ESP32S3
-  - [ ] Wio-SX1262 (915 MHz variant)
+  - [ ] ESP32-C6 module
+  - [ ] SX1262 (915 MHz variant)
   - [ ] NEO-6M GPS module
   - [ ] LIS3DH accelerometer
   - [ ] LiPo battery (500–1000 mAh)
