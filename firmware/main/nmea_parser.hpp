@@ -7,16 +7,20 @@
 #include <stdlib.h>
 
 struct NmeaData {
-    double latitude = 0;
-    double longitude = 0;
-    double altitude = 0;
-    double speed = 0;
-    double course = 0;
-    uint8_t satellites = 0;
-    bool has_fix = false;
+    double latitude = 0;    // Degrees, negative for South
+    double longitude = 0;   // Degrees, negative for West
+    double altitude = 0;    // Meters above sea level
+    double speed = 0;       // Kilometers per hour
+    double course = 0;      // Degrees from true north
+    uint8_t satellites = 0; // Number of satellites used
+    bool has_fix = false;   // True if GPS has valid fix
 };
 
 inline int nmea_parse_field(const char* nmea, int field_idx, char* out, size_t out_len) {
+    if (field_idx < 0 || out_len == 0) {
+        return 0;
+    }
+    
     int field_count = 0;
     size_t pos = 0;
     size_t field_start = 0;
@@ -79,6 +83,9 @@ inline bool nmea_parse_gga(const char* nmea, NmeaData& data) {
     
     if (nmea_parse_field(nmea, 6, field, sizeof(field)) > 0) {
         data.has_fix = (field[0] >= '1' && field[0] <= '9');
+    } else {
+        data.has_fix = false;
+        return false;
     }
     
     if (nmea_parse_field(nmea, 7, field, sizeof(field)) > 0) {
@@ -96,18 +103,30 @@ inline bool nmea_parse_rmc(const char* nmea, NmeaData& data) {
     char field[32];
     char dir[2];
     
+    bool lat_parsed = false;
     if (nmea_parse_field(nmea, 3, field, sizeof(field)) > 0) {
         double lat = atof(field);
         if (nmea_parse_field(nmea, 4, dir, sizeof(dir)) > 0) {
             data.latitude = (dir[0] == 'S') ? -lat : lat;
+            lat_parsed = true;
         }
     }
     
+    if (!lat_parsed) {
+        return false;
+    }
+    
+    bool lon_parsed = false;
     if (nmea_parse_field(nmea, 5, field, sizeof(field)) > 0) {
         double lon = atof(field);
         if (nmea_parse_field(nmea, 6, dir, sizeof(dir)) > 0) {
             data.longitude = (dir[0] == 'W') ? -lon : lon;
+            lon_parsed = true;
         }
+    }
+    
+    if (!lon_parsed) {
+        return false;
     }
     
     if (nmea_parse_field(nmea, 7, field, sizeof(field)) > 0) {
@@ -131,8 +150,10 @@ inline bool nmea_parse(const char* nmea, size_t len, NmeaData& data) {
     }
     
     if (strncmp(nmea + 3, "GGA", 3) == 0) {
+        // Sentence type is at offset 3: $GPGGA, $GLGGA, etc.
         return nmea_parse_gga(nmea, data);
     } else if (strncmp(nmea + 3, "RMC", 3) == 0) {
+        // Sentence type is at offset 3: $GPRMC, $GLRMC, etc.
         return nmea_parse_rmc(nmea, data);
     }
     return false;
