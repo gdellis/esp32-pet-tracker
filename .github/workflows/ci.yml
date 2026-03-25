@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    container: espressif/idf:v6.0_esp32c6
+    container: espressif/idf:v6.0
 
     steps:
       - name: Checkout
