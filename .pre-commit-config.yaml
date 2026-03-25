@@ -20,11 +20,8 @@ repos:
   - id: markdownlint-cli2
     args: [ '--config', '.markdownlint.json' ]
 
-repos:
-  - repo: https://github.com/espressif/idf-ci
-    rev: v0.7.0  # Use the latest version
-    hooks:
-      - id: check-tests-missing-config
-        name: idf-ci
-        entry: cd:firmware
-        
+# - repo: https://github.com/espressif/idf-ci
+#   rev: v0.7.0 # Use the latest version
+#   hooks:
+#   - id: check-tests-missing-config
+#     entry: cd:firmware:idf-ci
