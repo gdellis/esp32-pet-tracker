@@ -10,11 +10,14 @@
 #include "led_driver.hpp"
 #include "button_handler.hpp"
 #include "deep_sleep.hpp"
+#include "gps.hpp"
 
 static const char* TAG = "pet-tracker";
 
 #define LED_PIN GPIO_NUM_8
 #define BUTTON_PIN GPIO_NUM_9
+#define GPS_TX_PIN GPIO_NUM_7
+#define GPS_RX_PIN GPIO_NUM_15
 #define SLEEP_TIMEOUT_MS 30000
 #define DEEP_SLEEP_DURATION_US (5 * 60 * 1000000ULL)
 
@@ -39,6 +42,11 @@ extern "C" void app_main(void)
 
     LedDriver led(LED_PIN);
     ButtonHandler button(BUTTON_PIN, 200000);
+    Gps gps(GPS_UART_NUM);
+
+    if (gps.init()) {
+        ESP_LOGI(TAG, "GPS initialized");
+    }
 
     led.off();
 
@@ -55,6 +63,12 @@ extern "C" void app_main(void)
                 led.off();
             }
             ESP_LOGI(TAG, "Button pressed, LED toggled to %s", led_state ? "ON" : "OFF");
+        }
+
+        if (gps.update() && gps.has_fix()) {
+            const auto& data = gps.get_data();
+            ESP_LOGI(TAG, "GPS: lat=%.6f, lon=%.6f, alt=%.1f, satellites=%d",
+                     data.latitude, data.longitude, data.altitude, data.satellites);
         }
 
         int64_t current_time = esp_timer_get_time() / 1000;

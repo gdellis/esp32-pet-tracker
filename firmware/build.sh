@@ -12,5 +12,5 @@ docker run --rm \
 	-u "$(id -u):$(id -g)" \
 	-e IDF_PATH=/opt/esp/idf \
 	-e HOME=/tmp \
-	espressif/idf:v5.3.1 \
+	espressif/idf:v6.0 \
 	sh -c ". /opt/esp/idf/export.sh && idf.py build"
