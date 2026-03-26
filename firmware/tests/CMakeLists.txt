@@ -43,3 +43,15 @@ target_include_directories(test_led_driver PRIVATE
     ${CMAKE_SOURCE_DIR}/../main
 )
 target_link_libraries(test_led_driver PRIVATE Catch2::Catch2WithMain)
+
+add_executable(test_lora_driver test_lora_driver.cpp
+    src/esp_timer_mock.cpp
+    src/gpio_mock.cpp
+    src/spi_mock.cpp
+    ${CMAKE_SOURCE_DIR}/../main/lora/sx1262.cpp
+)
+target_include_directories(test_lora_driver PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/../main
+)
+target_link_libraries(test_lora_driver PRIVATE Catch2::Catch2WithMain)

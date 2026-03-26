@@ -155,3 +155,4 @@ jobs:
           ./test_nmea_parser
           ./test_button_handler
           ./test_led_driver
+          ./test_lora_driver

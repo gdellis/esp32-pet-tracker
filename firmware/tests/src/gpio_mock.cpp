@@ -2,10 +2,10 @@
 
 namespace mock_gpio {
 
-gpio_num_t last_set_level_pin = GPIO_NUM_0;
-uint32_t last_set_level_value = 0;
-gpio_num_t last_get_level_pin = GPIO_NUM_0;
-uint32_t next_get_level_value = 1;
+volatile gpio_num_t last_set_level_pin = GPIO_NUM_0;
+volatile uint32_t last_set_level_value = 0;
+volatile gpio_num_t last_get_level_pin = GPIO_NUM_0;
+volatile uint32_t next_get_level_value = 1;
 
 void reset_gpio_mock() {
     last_set_level_pin = GPIO_NUM_0;
@@ -39,7 +39,7 @@ int gpio_get_level(gpio_num_t gpio_num) {
     return next_get_level_value;
 }
 
-int gpio_set_level(gpio_num_t gpio_num, uint32_t level) {
+__attribute__((noinline)) int gpio_set_level(gpio_num_t gpio_num, uint32_t level) {
     using namespace mock_gpio;
     last_set_level_pin = gpio_num;
     last_set_level_value = level;

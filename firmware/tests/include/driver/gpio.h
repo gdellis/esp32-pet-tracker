@@ -70,10 +70,10 @@ int gpio_config(const gpio_config_t *conf);
 #endif
 
 namespace mock_gpio {
-extern gpio_num_t last_set_level_pin;
-extern uint32_t last_set_level_value;
-extern gpio_num_t last_get_level_pin;
-extern uint32_t next_get_level_value;
+extern volatile gpio_num_t last_set_level_pin;
+extern volatile uint32_t last_set_level_value;
+extern volatile gpio_num_t last_get_level_pin;
+extern volatile uint32_t next_get_level_value;
 
 void reset_gpio_mock();
 void gpio_set_next_get_level(gpio_num_t pin, uint32_t value);

@@ -6,16 +6,27 @@
 #include <string.h>
 #include <stdlib.h>
 
+/**
+ * @brief NMEA sentence parsed data
+ */
 struct NmeaData {
-    double latitude = 0;    // Degrees, negative for South
-    double longitude = 0;   // Degrees, negative for West
-    double altitude = 0;    // Meters above sea level
-    double speed = 0;       // Kilometers per hour
-    double course = 0;      // Degrees from true north
-    uint8_t satellites = 0; // Number of satellites used
-    bool has_fix = false;   // True if GPS has valid fix
+    double latitude = 0;    /**< Degrees, negative for South */
+    double longitude = 0;   /**< Degrees, negative for West */
+    double altitude = 0;    /**< Meters above sea level */
+    double speed = 0;       /**< Kilometers per hour */
+    double course = 0;      /**< Degrees from true north */
+    uint8_t satellites = 0; /**< Number of satellites used */
+    bool has_fix = false;   /**< True if GPS has valid fix */
 };
 
+/**
+ * @brief Parse a field from an NMEA sentence
+ * @param nmea NMEA sentence string
+ * @param field_idx Zero-based field index
+ * @param out Output buffer for field value
+ * @param out_len Size of output buffer
+ * @return Number of characters written, 0 on failure
+ */
 inline int nmea_parse_field(const char* nmea, int field_idx, char* out, size_t out_len) {
     if (field_idx < 0 || out_len == 0) {
         return 0;
@@ -56,6 +67,12 @@ inline int nmea_parse_field(const char* nmea, int field_idx, char* out, size_t o
     return out_pos;
 }
 
+/**
+ * @brief Validate NMEA checksum
+ * @param nmea NMEA sentence string
+ * @param len Length of sentence
+ * @return true if checksum valid or absent
+ */
 inline bool nmea_validate_checksum(const char* nmea, size_t len) {
     const char* checksum_ptr = (const char*)memchr(nmea, '*', len);
     if (!checksum_ptr) {
@@ -78,6 +95,12 @@ inline bool nmea_validate_checksum(const char* nmea, size_t len) {
     return calculated == expected;
 }
 
+/**
+ * @brief Parse GGA sentence (fix data)
+ * @param nmea NMEA sentence string
+ * @param data Output structure
+ * @return true on successful parse
+ */
 inline bool nmea_parse_gga(const char* nmea, NmeaData& data) {
     char field[32];
 
@@ -99,6 +122,12 @@ inline bool nmea_parse_gga(const char* nmea, NmeaData& data) {
     return true;
 }
 
+/**
+ * @brief Parse RMC sentence (recommended minimum)
+ * @param nmea NMEA sentence string
+ * @param data Output structure
+ * @return true on successful parse
+ */
 inline bool nmea_parse_rmc(const char* nmea, NmeaData& data) {
     char field[32];
     char dir[2];
@@ -140,6 +169,13 @@ inline bool nmea_parse_rmc(const char* nmea, NmeaData& data) {
     return true;
 }
 
+/**
+ * @brief Parse NMEA sentence (GGA or RMC)
+ * @param nmea NMEA sentence string
+ * @param len Length of sentence
+ * @param data Output structure
+ * @return true on successful parse
+ */
 inline bool nmea_parse(const char* nmea, size_t len, NmeaData& data) {
     if (len < 6 || nmea[0] != '$') {
         return false;
@@ -150,10 +186,8 @@ inline bool nmea_parse(const char* nmea, size_t len, NmeaData& data) {
     }
 
     if (strncmp(nmea + 3, "GGA", 3) == 0) {
-        // Sentence type is at offset 3: $GPGGA, $GLGGA, etc.
         return nmea_parse_gga(nmea, data);
     } else if (strncmp(nmea + 3, "RMC", 3) == 0) {
-        // Sentence type is at offset 3: $GPRMC, $GLRMC, etc.
         return nmea_parse_rmc(nmea, data);
     }
     return false;

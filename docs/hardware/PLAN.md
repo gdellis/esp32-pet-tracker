@@ -172,6 +172,7 @@ bool parse_nmea(const char* nmea, GpsData* out);
 ```
 
 - [x] **Done** - Implemented in `gps.cpp` and `nmea_parser.hpp`, merged PR #2
+- [x] **Updated** - Baud rate changed from 9600 to 115200 for M100-5883 compatibility
 - [x] **Bugs Fixed**: NMEA sentence type detection (`nmea + 3`), field index offset, buffer size issues
 
 **Test**:
@@ -343,9 +344,10 @@ Ray casting algorithm for polygon zones.
 
 - [x] NMEA parser tests (43 assertions, 5 test cases)
 - [x] Button handler tests (4 assertions)
-- [ ] LED driver tests (template exists, not yet building)
+- [x] LED driver tests (9 assertions, 1 test case)
+- [x] LoRa driver tests (14 assertions, 3 test cases)
 - [ ] GPS driver tests
-- [ ] LoRa driver tests
+- [ ] Expand LoRa tests: packet TX/RX, error conditions, state transitions, timeouts
 
 ### 6.2 Target Tests
 
@@ -475,8 +477,8 @@ def geofences():
 | 2 | GPS UART driver, NMEA parsing | ✅ Done (PR #2) |
 | 2 | Button handler with debounce | ✅ Done (bug fixed) |
 | 2 | LED driver | ✅ Done |
-| 3 | Unit tests with mocks | ✅ Done (PR #3) |
-| 4 | LoRa SX1262 driver | Pending |
+| 3 | Unit tests with mocks | ✅ Done (PR #3, PR #7) |
+| 4 | LoRa SX1262 driver | ✅ Done (PR #6, PR #7) |
 | 4 | BLE GATT server | Pending |
 | 4 | LIS3DH accelerometer | Pending |
 | 5 | State machine | Pending |
@@ -495,7 +497,7 @@ def geofences():
 - **Target MCU**: ESP32-C6 (RISC-V)
 - **LoRa driver**: Custom SX1262 driver (SPI interface)
 - **GPS parsing**: Custom header-only NMEA parser (`nmea_parser.hpp`)
-- **GPS module**: NEO-6M (25 mA, cheap, reliable)
+- **GPS module**: HGLRC M100-5883 (M10, 10Hz, 115200 baud, 72ch, multi-GNSS)
 - **LoRa frequency**: 915 MHz (US region)
 - **BLE fallback**: Included for direct phone connectivity when in range
 - **Accelerometer**: LIS3DH for motion detection (wake on movement)
@@ -509,8 +511,9 @@ def geofences():
 
 ## TODO
 
-- [ ] Add Doxygen docstrings to all public APIs (LoRaDriver, Gps, ButtonHandler, LedDriver, etc.)
-- [ ] Add unit tests for LoRa driver with SPI mock
+- [x] Add Doxygen docstrings to all public APIs (LoRaDriver, Gps, ButtonHandler, LedDriver, etc.)
+- [x] Add unit tests for LoRa driver with SPI mock
+- [ ] Expand LoRa driver tests: packet TX/RX, error conditions, state transitions, timeout scenarios
 - [ ] Add interrupt-driven DIO handling for LoRa (replace polling)
 
 ---

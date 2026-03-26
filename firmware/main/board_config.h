@@ -1,35 +1,67 @@
 #pragma once
 
+/**
+ * @brief Board pin configuration for ESP32-S3 and ESP32-C6
+ *
+ * Pin assignments for:
+ * - Status LED
+ * - Push button
+ * - GPS UART (TX/RX)
+ * - LoRa SX1262 SPI (MOSI/MISO/SCK/NSS/RESET/BUSY/DIO1)
+ */
+
 #include <sdkconfig.h>
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <driver/gpio.h>
 
+/** @brief Status LED GPIO */
 #define BOARD_LED_PIN GPIO_NUM_8
+/** @brief Push button GPIO */
 #define BOARD_BUTTON_PIN GPIO_NUM_9
+/** @brief GPS UART TX GPIO */
 #define BOARD_GPS_TX_PIN GPIO_NUM_7
+/** @brief GPS UART RX GPIO */
 #define BOARD_GPS_RX_PIN GPIO_NUM_15
+/** @brief LoRa MOSI GPIO */
 #define BOARD_LORA_MOSI_PIN GPIO_NUM_4
+/** @brief LoRa MISO GPIO */
 #define BOARD_LORA_MISO_PIN GPIO_NUM_5
+/** @brief LoRa SCK GPIO */
 #define BOARD_LORA_SCK_PIN GPIO_NUM_6
+/** @brief LoRa NSS (chip select) GPIO */
 #define BOARD_LORA_NSS_PIN GPIO_NUM_8
+/** @brief LoRa reset GPIO */
 #define BOARD_LORA_RESET_PIN GPIO_NUM_1
+/** @brief LoRa busy indicator GPIO */
 #define BOARD_LORA_BUSY_PIN GPIO_NUM_2
+/** @brief LoRa DIO1 interrupt GPIO */
 #define BOARD_LORA_DIO1_PIN GPIO_NUM_3
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <driver/gpio.h>
 
+/** @brief Status LED GPIO */
 #define BOARD_LED_PIN GPIO_NUM_8
+/** @brief Push button GPIO */
 #define BOARD_BUTTON_PIN GPIO_NUM_9
+/** @brief GPS UART TX GPIO */
 #define BOARD_GPS_TX_PIN GPIO_NUM_4
+/** @brief GPS UART RX GPIO */
 #define BOARD_GPS_RX_PIN GPIO_NUM_5
+/** @brief LoRa MOSI GPIO */
 #define BOARD_LORA_MOSI_PIN GPIO_NUM_6
+/** @brief LoRa MISO GPIO */
 #define BOARD_LORA_MISO_PIN GPIO_NUM_7
+/** @brief LoRa SCK GPIO */
 #define BOARD_LORA_SCK_PIN GPIO_NUM_8
+/** @brief LoRa NSS (chip select) GPIO */
 #define BOARD_LORA_NSS_PIN GPIO_NUM_9
+/** @brief LoRa reset GPIO */
 #define BOARD_LORA_RESET_PIN GPIO_NUM_10
+/** @brief LoRa busy indicator GPIO */
 #define BOARD_LORA_BUSY_PIN GPIO_NUM_3
+/** @brief LoRa DIO1 interrupt GPIO */
 #define BOARD_LORA_DIO1_PIN GPIO_NUM_1
 
 #else

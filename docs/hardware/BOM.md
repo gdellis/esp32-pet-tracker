@@ -8,7 +8,7 @@
 |-----|-----------|-------------|-----------|-------|
 | 1 | Seeed Studio XIAO ESP32S3 | 113991162 | $10.99 | |
 | 1 | Wio-SX1262 for XIAO (915 MHz) | 113991554 | $14.90 | |
-| 1 | u-blox NEO-6M GPS Module | Various | $8–15 | |
+| 1 | HGLRC M100-5883 GPS (M10, 115200 baud) | M100-5883 | $16.99 | 10Hz, 72ch, multi-GNSS |
 | 1 | LIS3DH Accelerometer | ADA1897 | $1.95 | |
 | 1 | LiPo Battery 503035 500mAh | Various | $5–8 | |
 
@@ -69,9 +69,9 @@
 
 | Part | Pros | Cons | Est. Cost |
 |------|------|------|-----------|
-| NEO-6M (default) | Cheap, reliable, well-documented | Higher power (~25mA), older platform | $8–15 |
-| MAX-M10S | Lower power (~15mA), faster fix, M10 platform | More expensive | $15–20 |
-| L76B | Integrated, small | Higher power, less common | $8–12 |
+| M100-5883 (default) | M10 chip, 72ch, 10Hz, multi-GNSS, low power | 115200 baud (config change) | $16.99 |
+| MAX-M10S | Lower power, faster fix, M10 platform | More expensive | $15–20 |
+| NEO-6M | Cheap, reliable, well-documented | Older, slower, 25mA | $8–15 |
 
 ### Microcontroller
 
@@ -132,7 +132,7 @@ Design files to be created in:
 
 ### Amazon / Other
 
-- [ ] NEO-6M GPS Module with antenna
+- [ ] M100-5883 GPS Module (M10, 115200 baud)
 - [ ] LIS3DH Breakout Board
 - [ ] TP4056 USB-C Charger Module
 - [ ] LiPo 503035 500mAh
