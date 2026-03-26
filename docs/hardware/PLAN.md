@@ -344,9 +344,10 @@ Ray casting algorithm for polygon zones.
 
 - [x] NMEA parser tests (43 assertions, 5 test cases)
 - [x] Button handler tests (4 assertions)
-- [ ] LED driver tests (template exists, not yet building)
+- [x] LED driver tests (9 assertions, 1 test case)
+- [x] LoRa driver tests (14 assertions, 3 test cases)
 - [ ] GPS driver tests
-- [ ] LoRa driver tests
+- [ ] Expand LoRa tests: packet TX/RX, error conditions, state transitions, timeouts
 
 ### 6.2 Target Tests
 
@@ -476,8 +477,8 @@ def geofences():
 | 2 | GPS UART driver, NMEA parsing | ✅ Done (PR #2) |
 | 2 | Button handler with debounce | ✅ Done (bug fixed) |
 | 2 | LED driver | ✅ Done |
-| 3 | Unit tests with mocks | ✅ Done (PR #3) |
-| 4 | LoRa SX1262 driver | Pending |
+| 3 | Unit tests with mocks | ✅ Done (PR #3, PR #7) |
+| 4 | LoRa SX1262 driver | ✅ Done (PR #6, PR #7) |
 | 4 | BLE GATT server | Pending |
 | 4 | LIS3DH accelerometer | Pending |
 | 5 | State machine | Pending |
@@ -512,6 +513,7 @@ def geofences():
 
 - [x] Add Doxygen docstrings to all public APIs (LoRaDriver, Gps, ButtonHandler, LedDriver, etc.)
 - [x] Add unit tests for LoRa driver with SPI mock
+- [ ] Expand LoRa driver tests: packet TX/RX, error conditions, state transitions, timeout scenarios
 - [ ] Add interrupt-driven DIO handling for LoRa (replace polling)
 
 ---
