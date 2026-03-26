@@ -323,7 +323,7 @@ esp_err_t LoRaDriver::send_blocking(const uint8_t* data, size_t len, uint32_t ti
         LORA_EVENT_TX_DONE_BIT,
         pdTRUE,
         pdFALSE,
-        pdMS_TO_TICK_COUNT(timeout_ms)
+        pdMS_TO_TICKS(timeout_ms)
     );
 
     if (bits & LORA_EVENT_TX_DONE_BIT) {
@@ -372,7 +372,7 @@ esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len,
         LORA_EVENT_RX_DONE_BIT | LORA_EVENT_RX_TIMEOUT_BIT,
         pdTRUE,
         pdFALSE,
-        pdMS_TO_TICK_COUNT(timeout_ms)
+        pdMS_TO_TICKS(timeout_ms)
     );
 
     if (bits & LORA_EVENT_RX_TIMEOUT_BIT) {
