@@ -15,6 +15,7 @@ typedef struct {
 
 #define EventBits_t uint32_t
 
+EventGroupHandle_t xEventGroupCreate(void);
 EventGroupHandle_t xEventGroupCreateStatic(StaticEventGroup_t* buffer);
 EventBits_t xEventGroupWaitBits(
     EventGroupHandle_t xEventGroup,

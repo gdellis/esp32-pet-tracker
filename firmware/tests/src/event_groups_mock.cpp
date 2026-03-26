@@ -2,6 +2,10 @@
 
 static EventBits_t current_bits = 0;
 
+EventGroupHandle_t xEventGroupCreate(void) {
+    return &current_bits;
+}
+
 EventGroupHandle_t xEventGroupCreateStatic(StaticEventGroup_t* buffer) {
     (void)buffer;
     return &current_bits;
