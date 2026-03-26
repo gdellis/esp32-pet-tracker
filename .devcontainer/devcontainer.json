@@ -1,6 +1,6 @@
 {
     "name": "ESP32 Pet Tracker",
-    "image": "espressif/idf:v6",
+    "image": "espressif/idf:v6.0",
     "customizations": {
         "vscode": {
             "extensions": [

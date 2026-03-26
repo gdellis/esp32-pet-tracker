@@ -182,9 +182,13 @@ void BleServer::add_characteristics() {
         .uuid = {.uuid16 = BLE_CHAR_LOCATION_UUID},
     };
     
+    esp_attr_value_t attr_val = {};
+    esp_attr_control_t attr_ctrl = {};
+    
     esp_err_t ret = esp_ble_gatts_add_char(service_handle_, &loc_uuid,
                                             ESP_GATT_PERM_READ,
-                                            ESP_GATT_CHAR_PROP_BIT_READ);
+                                            ESP_GATT_CHAR_PROP_BIT_READ,
+                                            &attr_val, &attr_ctrl);
     if (ret == ESP_OK) {
         location_char_handle_ = service_handle_;
     }
@@ -196,7 +200,8 @@ void BleServer::add_characteristics() {
     
     ret = esp_ble_gatts_add_char(service_handle_, &name_uuid,
                                   ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-                                  ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE);
+                                  ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+                                  &attr_val, &attr_ctrl);
     if (ret == ESP_OK) {
         name_char_handle_ = service_handle_;
     }
@@ -226,6 +231,8 @@ void BleServer::start_advertising() {
     }
     
     esp_ble_adv_params_t adv_params = {
+        .adv_int_min = BLE_MIN_INTERVAL_MS,
+        .adv_int_max = BLE_MAX_INTERVAL_MS,
         .adv_type = ADV_TYPE_IND,
         .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
         .peer_addr = {0},
@@ -273,10 +280,7 @@ void BleServer::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_p
 void BleServer::on_gatts_event(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t* param) {
     switch (event) {
         case ESP_GATTS_REG_EVT:
-            if (param->reg.app_id == 0) {
-                service_handle_ = param->reg.service_handle;
-                create_services();
-            }
+            create_services();
             break;
             
         case ESP_GATTS_CREATE_EVT:
