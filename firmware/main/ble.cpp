@@ -1,6 +1,7 @@
 #include "ble.hpp"
 #include "esp_log.h"
 #include "esp_bt.h"
+#include "esp_bt_main.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gatts_api.h"
 #include "esp_gatt_defs.h"
@@ -162,7 +163,7 @@ void BleServer::create_services() {
     esp_gatt_srvc_id_t svc_id = {
         .id = {
             .uuid = {
-                .len = ESP_UUID_TYPE_16,
+                .len = ESP_UUID_LEN_16,
                 .uuid = {.uuid16 = BLE_SERVICE_UUID},
             },
             .inst_id = 0,
@@ -178,7 +179,7 @@ void BleServer::create_services() {
 
 void BleServer::add_characteristics() {
     esp_bt_uuid_t loc_uuid = {
-        .len = ESP_UUID_TYPE_16,
+        .len = ESP_UUID_LEN_16,
         .uuid = {.uuid16 = BLE_CHAR_LOCATION_UUID},
     };
     
@@ -194,7 +195,7 @@ void BleServer::add_characteristics() {
     }
     
     esp_bt_uuid_t name_uuid = {
-        .len = ESP_UUID_TYPE_16,
+        .len = ESP_UUID_LEN_16,
         .uuid = {.uuid16 = BLE_CHAR_NAME_UUID},
     };
     
