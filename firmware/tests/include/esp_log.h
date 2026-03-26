@@ -6,7 +6,7 @@
 #define ESP_LOGW(tag, format, ...) do {} while(0)
 #define ESP_LOGE(tag, format, ...) do {} while(0)
 
-#define ESP_ERROR_CHECK(x) do { } while(0)
+#define ESP_ERROR_CHECK(x) do { (void)(x); } while(0)
 
 #define ESP_OK 0
 #define ESP_ERR_TIMEOUT 0x101

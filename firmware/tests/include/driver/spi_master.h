@@ -46,6 +46,7 @@ typedef struct spi_device_t* spi_device_handle_t;
 
 #define SPI_TRANS_USE_TXDATA (1 << 2)
 #define SPI_TRANS_USE_RXDATA (1 << 1)
+#define SPI_DMA_CH_AUTO -1
 #define ESP_OK 0
 #define ESP_ERR_INVALID_ARG 0x102
 
@@ -54,6 +55,7 @@ extern "C" {
 #endif
 
 int spi_bus_initialize(spi_host_device_t host, const spi_bus_config_t* config, int dma);
+int spi_bus_add_device(spi_host_device_t host, const spi_device_interface_config_t* config, spi_device_handle_t* dev);
 int spi_bus_remove_device(spi_device_handle_t dev);
 int spi_bus_free(spi_host_device_t host);
 int spi_device_transmit(spi_device_handle_t dev, spi_transaction_t* trans);

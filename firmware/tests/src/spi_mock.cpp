@@ -30,6 +30,13 @@ int spi_bus_initialize(spi_host_device_t host, const spi_bus_config_t* config, i
     return ESP_OK;
 }
 
+int spi_bus_add_device(spi_host_device_t host, const spi_device_interface_config_t* config, spi_device_handle_t* dev) {
+    (void)host;
+    (void)config;
+    (void)dev;
+    return ESP_OK;
+}
+
 int spi_bus_remove_device(spi_device_handle_t dev) {
     (void)dev;
     return ESP_OK;
