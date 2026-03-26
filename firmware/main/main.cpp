@@ -1,3 +1,14 @@
+/**
+ * @file main.cpp
+ * @brief ESP32 Pet Tracker application entry point
+ *
+ * Pet tracker firmware that:
+ * - Acquires GPS location via UART
+ * - Transmits location data over LoRa SX1262
+ * - Supports deep sleep between transmissions
+ * - Button press to toggle LED and trigger transmission
+ */
+
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -21,25 +32,36 @@ static const char* TAG = "pet-tracker";
 #define GPS_FIX_TIMEOUT_MS 60000
 #define LORA_TX_TIMEOUT_MS 5000
 
+/** @brief Packet type for location data */
 static constexpr uint8_t PACKET_TYPE_LOCATION = 0x01;
 
+/**
+ * @brief Tracker packet structure for LoRa transmission
+ */
 struct TrackerPacket {
-    uint8_t type;
-    uint32_t device_id;
-    double latitude;
-    double longitude;
-    double altitude;
-    uint16_t battery_mv;
-    uint8_t satellites;
-    uint64_t timestamp;
+    uint8_t type;      /**< Packet type */
+    uint32_t device_id; /**< Device identifier */
+    double latitude;   /**< Latitude in degrees */
+    double longitude;   /**< Longitude in degrees */
+    double altitude;   /**< Altitude in meters */
+    uint16_t battery_mv; /**< Battery voltage in mV */
+    uint8_t satellites; /**< Number of GPS satellites */
+    uint64_t timestamp; /**< Timestamp in milliseconds */
 } __attribute__((packed));
 
 static uint32_t s_device_id = 0x12345678;
 
+/**
+ * @brief LoRa event callback handler
+ * @param event LoRa event that occurred
+ */
 static void lora_event_handler(LoRaEvent event) {
     ESP_LOGD(TAG, "LoRa event: %s", LoRaDriver::event_to_string(event));
 }
 
+/**
+ * @brief Application entry point
+ */
 extern "C" void app_main(void)
 {
     ESP_LOGI(TAG, "ESP32 Pet Tracker starting...");
