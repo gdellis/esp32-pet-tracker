@@ -93,7 +93,8 @@ jobs:
           markdownlint-cli2 '**/*.md' '.markdownlint.json' \
             '!firmware/tests/build/**' \
             '!firmware/build/**' \
-            '!third_party/**'
+            '!third_party/**' \
+            '!.opencode/**'
 
   # Build ESP-IDF firmware (runs in Docker)
   build-firmware:
