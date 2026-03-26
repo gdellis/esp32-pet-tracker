@@ -4,6 +4,7 @@ idf_component_register(
     "led_driver.cpp"
     "button_handler.cpp"
     "gps.cpp"
+    "ble.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lora/sx1262.cpp"
     INCLUDE_DIRS "."
 )
