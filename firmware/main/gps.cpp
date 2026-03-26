@@ -3,6 +3,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 #include "esp_timer.h"
+#include "board_config.h"
 
 static const char* TAG = "gps";
 
@@ -22,7 +23,7 @@ bool Gps::init() {
     uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
 
     ESP_ERROR_CHECK(uart_param_config(uart_num_, &uart_config));
-    ESP_ERROR_CHECK(uart_set_pin(uart_num_, GPS_TX_PIN, GPS_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    ESP_ERROR_CHECK(uart_set_pin(uart_num_, BOARD_GPS_TX_PIN, BOARD_GPS_RX_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     ESP_ERROR_CHECK(uart_driver_install(uart_num_, GPS_BUFFER_SIZE * 2, 0, 0, NULL, 0));
 
     ESP_LOGI(TAG, "GPS initialized on UART%d", uart_num_);

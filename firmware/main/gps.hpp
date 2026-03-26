@@ -5,10 +5,9 @@
 #include "driver/uart.h"
 #include "esp_event.h"
 #include "nmea_parser.hpp"
+#include "board_config.h"
 
 #define GPS_UART_NUM UART_NUM_1
-#define GPS_TX_PIN GPIO_NUM_7
-#define GPS_RX_PIN GPIO_NUM_15
 #define GPS_BUFFER_SIZE 256
 
 enum class GpsFixStatus {

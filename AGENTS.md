@@ -1,13 +1,28 @@
 # AGENTS.md
 
-ESP32-C6 pet tracker firmware built with C++ and ESP-IDF framework.
+ESP32 pet tracker firmware built with C++ and ESP-IDF framework.
 
 ## Project Overview
 
-- **Type**: Embedded C++ project (ESP32-C6)
+- **Type**: Embedded C++ project (ESP32)
 - **Stack**: C++, ESP-IDF v6.0, FreeRTOS, LoRa SX1262, GPS, BLE
-- **Target**: ESP32-C6 (RISC-V)
-- **Reference**: https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/
+- **Primary Target**: ESP32-S3 (Tensilica LX7)
+- **Alternate Target**: ESP32-C6 (RISC-V)
+- **Reference**: https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/
+
+## Multi-Board Support
+
+The firmware supports both ESP32S3 and ESP32C6. Pin configurations are defined in `firmware/main/board_config.h`.
+
+| Pin | ESP32S3 | ESP32C6 | Function |
+|-----|---------|---------|----------|
+| LED | GPIO8 | GPIO8 | Status LED |
+| Button | GPIO9 | GPIO9 | Push button |
+| GPS TX | GPIO7 | GPIO4 | GPS UART TX |
+| GPS RX | GPIO15 | GPIO5 | GPS UART RX |
+| LoRa TX | GPIO4 | GPIO6 | LoRa UART TX |
+| LoRa RX | GPIO5 | GPIO7 | LoRa UART RX |
+| LoRa Reset | GPIO6 | GPIO10 | LoRa reset |
 
 ## Agent Guidelines
 
@@ -29,6 +44,7 @@ firmware/
 ├── main/
 │   ├── CMakeLists.txt      # Main component
 │   ├── main.cpp            # Application entry
+│   ├── board_config.h      # Multi-board pin configuration
 │   ├── gpio_driver.cpp     # GPIO abstraction
 │   ├── led_driver.cpp      # LED driver
 │   ├── button_handler.cpp  # Button debounce
@@ -38,6 +54,7 @@ firmware/
     ├── CMakeLists.txt      # Host test CMake
     ├── test_nmea_parser.cpp
     ├── test_button_handler.cpp
+    ├── test_led_driver.cpp
     ├── include/             # Mock headers for host testing
     │   ├── esp_timer.h
     │   ├── esp_err.h
@@ -54,22 +71,25 @@ firmware/
 
 ```bash
 cd firmware
-./build.sh
+./build.sh                    # Build for ESP32S3 (default)
+./build.sh --board esp32c6    # Build for ESP32C6
+./build.sh --flash --monitor  # Build, flash, and monitor
 ```
 
 ### Flash to Device
 
 ```bash
 docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v6.0 \
-  sh -c ". /opt/esp/idf/export.sh && idf.py -p /dev/ttyACM0 flash monitor"
+  sh -c ". /opt/esp/idf/export.sh && idf.py -D IDF_TARGET=esp32s3 -p /dev/ttyACM0 flash monitor"
 ```
 
 ### Manual Build (with ESP-IDF installed)
 
 ```bash
 cd firmware
-idf.py build
-idf.py -p /dev/ttyACM0 flash monitor
+idf.py set-target esp32s3    # Set target once
+idf.py build                  # Build
+idf.py -p /dev/ttyACM0 flash monitor  # Flash and monitor
 ```
 
 ## Code Style Guidelines
@@ -107,15 +127,17 @@ main/
 
 ## Hardware Configuration
 
-| Pin | Function | Notes |
-|-----|----------|-------|
-| GPIO8 | LED | Active high |
-| GPIO9 | Button | Active low (pulled up) |
-| GPIO4 | LoRa TX | |
-| GPIO5 | LoRa RX | |
-| GPIO6 | LoRa Reset | |
-| GPIO7 | GPS TX | |
-| GPIO15 | GPS RX | |
+Pin configurations for each board are defined in `board_config.h`. Default configuration is ESP32S3.
+
+| Pin | ESP32S3 | ESP32C6 | Function |
+|-----|---------|---------|----------|
+| LED | GPIO8 | GPIO8 | Status LED |
+| Button | GPIO9 | GPIO9 | Push button |
+| GPS TX | GPIO7 | GPIO4 | GPS UART TX |
+| GPS RX | GPIO15 | GPIO5 | GPS UART RX |
+| LoRa TX | GPIO4 | GPIO6 | LoRa UART TX |
+| LoRa RX | GPIO5 | GPIO7 | LoRa UART RX |
+| LoRa Reset | GPIO6 | GPIO10 | LoRa reset |
 
 ## Testing
 
@@ -130,6 +152,7 @@ mkdir -p build && cd build
 cmake .. && make -j$(nproc)
 ./test_nmea_parser    # NMEA parsing tests (43 assertions)
 ./test_button_handler # Button debounce tests (4 assertions)
+./test_led_driver     # LED driver tests (9 assertions)
 ```
 
 ### Target Tests (Requires Hardware)

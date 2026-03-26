@@ -1,0 +1,33 @@
+#pragma once
+
+#include <sdkconfig.h>
+
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#include <driver/gpio.h>
+
+#define BOARD_LED_PIN GPIO_NUM_8
+#define BOARD_BUTTON_PIN GPIO_NUM_9
+#define BOARD_GPS_TX_PIN GPIO_NUM_7
+#define BOARD_GPS_RX_PIN GPIO_NUM_15
+#define BOARD_LORA_TX_PIN GPIO_NUM_4
+#define BOARD_LORA_RX_PIN GPIO_NUM_5
+#define BOARD_LORA_RESET_PIN GPIO_NUM_6
+#define BOARD_LORA_BUSY_PIN GPIO_NUM_3
+#define BOARD_LORA_DIO1_PIN GPIO_NUM_1
+
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+#include <driver/gpio.h>
+
+#define BOARD_LED_PIN GPIO_NUM_8
+#define BOARD_BUTTON_PIN GPIO_NUM_9
+#define BOARD_GPS_TX_PIN GPIO_NUM_4
+#define BOARD_GPS_RX_PIN GPIO_NUM_5
+#define BOARD_LORA_TX_PIN GPIO_NUM_6
+#define BOARD_LORA_RX_PIN GPIO_NUM_7
+#define BOARD_LORA_RESET_PIN GPIO_NUM_10
+#define BOARD_LORA_BUSY_PIN GPIO_NUM_3
+#define BOARD_LORA_DIO1_PIN GPIO_NUM_1
+
+#else
+#error "No target board specified. Set CONFIG_IDF_TARGET_ESP32S3 or CONFIG_IDF_TARGET_ESP32C6"
+#endif

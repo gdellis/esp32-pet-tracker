@@ -6,6 +6,7 @@
 #include "esp_timer.h"
 #include "esp_sleep.h"
 
+#include "board_config.h"
 #include "gpio_driver.hpp"
 #include "led_driver.hpp"
 #include "button_handler.hpp"
@@ -14,10 +15,6 @@
 
 static const char* TAG = "pet-tracker";
 
-#define LED_PIN GPIO_NUM_8
-#define BUTTON_PIN GPIO_NUM_9
-#define GPS_TX_PIN GPIO_NUM_7
-#define GPS_RX_PIN GPIO_NUM_15
 #define SLEEP_TIMEOUT_MS 30000
 #define DEEP_SLEEP_DURATION_US (5 * 60 * 1000000ULL)
 
@@ -26,7 +23,7 @@ extern "C" void app_main(void)
     ESP_LOGI(TAG, "ESP32 Pet Tracker starting...");
 
     DeepSleep::enable_timer_wakeup(DEEP_SLEEP_DURATION_US);
-    DeepSleep::enable_gpio_wakeup(BUTTON_PIN, ESP_EXT1_WAKEUP_ANY_LOW);
+    DeepSleep::enable_gpio_wakeup(BOARD_BUTTON_PIN, ESP_EXT1_WAKEUP_ANY_LOW);
 
     switch (DeepSleep::get_wakeup_cause()) {
     case ESP_SLEEP_WAKEUP_TIMER:
@@ -40,8 +37,8 @@ extern "C" void app_main(void)
         break;
     }
 
-    LedDriver led(LED_PIN);
-    ButtonHandler button(BUTTON_PIN, 200000);
+    LedDriver led(BOARD_LED_PIN);
+    ButtonHandler button(BOARD_BUTTON_PIN, 200000);
     Gps gps(GPS_UART_NUM);
 
     if (gps.init()) {
