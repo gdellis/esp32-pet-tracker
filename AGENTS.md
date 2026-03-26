@@ -92,6 +92,14 @@ idf.py build                  # Build
 idf.py -p /dev/ttyACM0 flash monitor  # Flash and monitor
 ```
 
+### CI Build Target
+
+The CI builds for **both ESP32S3 and ESP32C6 targets**. When modifying code:
+- Always test locally for your target first
+- The CI uses `idf.py build` which reads from `sdkconfig`
+- If CI fails with "Target esp32c6 in sdkconfig does not match IDF_TARGET esp32s3", run `rm -rf build sdkconfig` locally and rebuild
+- When adding ESP-IDF APIs, verify the API exists in ESP-IDF v6.0 for both architectures (x86_64 and RISC-V compilers may have different behavior)
+
 ## Code Style Guidelines
 
 ### C++ Conventions
@@ -206,6 +214,8 @@ When modifying ESP-IDF dependencies:
 - **Port access**: Add user to `docker` group or use `sudo`
 - **Flash**: Ensure device is in download mode (hold BOOT, press RESET)
 - **Monitor**: Use `idf.py monitor` to view serial output
+- **sdkconfig target mismatch**: If CI fails with target mismatch, `rm -rf build sdkconfig` and rebuild
+- **FreeRTOS API signatures**: When adding FreeRTOS calls, verify exact signatures in ESP-IDF v6.0 headers - some APIs differ between versions (e.g., `xEventGroupClearBits` takes `const EventBits_t`)
 
 ## Dependencies (ESP-IDF Components)
 
