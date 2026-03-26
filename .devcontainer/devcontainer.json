@@ -4,7 +4,8 @@
     "customizations": {
         "vscode": {
             "extensions": [
-                "espressif.esp-idf-extension"
+                "espressif.esp-idf-extension",
+                "ms-vscode.cpptools-extension-pack"
             ],
             "settings": {
                 "idf.adapterTarget.name": "esp32c6",
@@ -12,11 +13,14 @@
                 "idf.customExtraVars": "",
                 "idf.espIdfPath": "/opt/esp/idf",
                 "idf.pythonBinPath": "/opt/esp/python_env/idf5.3_py3.10_env/bin/python",
+                "idf.telemetry": false,
                 "cSpell.extraPaths": "${workspaceFolder}/firmware/build/config",
-                "C_Cpp.default.configurationProvider": "ms-vscode.cpptools"
+                "C_Cpp.default.configurationProvider": "ms-vscode.cpptools",
+                "telemetry.telemetryLevel": "off",
+                "telemetry.enableTelemetry": false
             }
         }
     },
-    "postCreateCommand": "bash scripts/get ESP_IDF || true",
+    "postCreateCommand": "bash .devcontainer/post-create.sh",
     "postStartCommand": "bash scripts/get_idf_size || true"
 }
