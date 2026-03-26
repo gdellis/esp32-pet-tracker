@@ -6,6 +6,7 @@
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/timers.h"
 #include "freertos/event_groups.h"
 
 #define LORA_DEFAULT_SPI_FREQ 1000000
