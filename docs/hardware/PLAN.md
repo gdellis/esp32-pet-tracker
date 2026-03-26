@@ -513,8 +513,8 @@ def geofences():
 
 - [x] Add Doxygen docstrings to all public APIs (LoRaDriver, Gps, ButtonHandler, LedDriver, etc.)
 - [x] Add unit tests for LoRa driver with SPI mock
-- [ ] Expand LoRa driver tests: packet TX/RX, error conditions, state transitions, timeout scenarios
-- [ ] Add interrupt-driven DIO handling for LoRa (replace polling)
+- [x] Expand LoRa driver tests: packet TX/RX, error conditions, state transitions, timeout scenarios
+- [x] Add interrupt-driven DIO handling for LoRa (replace polling with FreeRTOS event group)
 
 ---
 

@@ -5,6 +5,8 @@
 #include "esp_err.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
+#include "driver/gpio_isr.h"
+#include "freertos/event_groups.h"
 
 #define LORA_DEFAULT_SPI_FREQ 1000000
 #define LORA_DEFAULT_TX_POWER 22
@@ -12,6 +14,10 @@
 #define LORA_MAX_PACKET_SIZE 255
 #define LORA_DEFAULT_SPREADING_FACTOR 7
 #define LORA_DEFAULT_PREAMBLE_LENGTH 8
+
+#define LORA_EVENT_TX_DONE_BIT (1 << 0)
+#define LORA_EVENT_RX_DONE_BIT (1 << 1)
+#define LORA_EVENT_RX_TIMEOUT_BIT (1 << 2)
 
 /**
  * @brief LoRa transceiver operating modes
@@ -223,11 +229,15 @@ private:
     esp_err_t wait_busy(uint32_t timeout_ms);
     esp_err_t set_operating_mode(LoRaMode mode);
     esp_err_t configure_modem();
+    static void dio1_isr_handler(void* arg);
     void handle_irq();
 
     spi_host_device_t spi_host_;
     spi_device_handle_t spi_;
     gpio_num_t mosi_, miso_, sclk_, nss_, reset_, busy_, dio1_;
+
+    EventGroupHandle_t event_group_;
+    StaticEventGroup_t event_group_buffer_;
 
     LoRaMode mode_;
     uint32_t frequency_;

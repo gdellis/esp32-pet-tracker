@@ -1,6 +1,8 @@
 #include "sx1262.hpp"
 #include "esp_log.h"
 #include "esp_rom_gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
 #include <string.h>
 
 static const char* TAG = "sx1262";
@@ -87,6 +89,7 @@ LoRaDriver::LoRaDriver(spi_host_device_t spi_host, gpio_num_t mosi, gpio_num_t m
     , tx_power_(LORA_DEFAULT_TX_POWER)
     , spreading_factor_(7)
     , callback_(nullptr)
+    , event_group_(xEventGroupCreateStatic(&event_group_buffer_))
 {
 }
 
@@ -130,6 +133,9 @@ esp_err_t LoRaDriver::init() {
     gpio_set_direction(busy_, GPIO_MODE_INPUT);
     gpio_reset_pin(dio1_);
     gpio_set_direction(dio1_, GPIO_MODE_INPUT);
+
+    gpio_set_intr_type(dio1_, GPIO_INTR_POSEDGE);
+    gpio_isr_handler_add(dio1_, dio1_isr_handler, this);
 
     ESP_ERROR_CHECK(reset());
     ESP_ERROR_CHECK(standby());
@@ -308,25 +314,25 @@ esp_err_t LoRaDriver::send(const uint8_t* data, size_t len) {
 esp_err_t LoRaDriver::send_blocking(const uint8_t* data, size_t len, uint32_t timeout_ms) {
     ESP_ERROR_CHECK(send(data, len));
 
-    uint32_t elapsed = 0;
-    while (is_busy() && elapsed < timeout_ms * 1000) {
-        esp_rom_delay_us(100);
-        elapsed += 100;
-    }
+    xEventGroupClearBits(event_group_, LORA_EVENT_TX_DONE_BIT);
 
-    if (elapsed >= timeout_ms * 1000) {
-        ESP_LOGW(TAG, "TX timeout");
-        mode_ = LoRaMode::STANDBY;
-        return ESP_ERR_TIMEOUT;
-    }
+    EventBits_t bits = xEventGroupWaitBits(
+        event_group_,
+        LORA_EVENT_TX_DONE_BIT,
+        pdTRUE,
+        pdFALSE,
+        pdMS_TO_TICK_COUNT(timeout_ms)
+    );
 
-    uint8_t irq_status = read_reg(0x0C);
-    if (irq_status & SX1262_IRQ_TX_DONE) {
+    if (bits & LORA_EVENT_TX_DONE_BIT) {
         ESP_LOGD(TAG, "TX complete");
+        mode_ = LoRaMode::STANDBY;
+        return ESP_OK;
     }
 
+    ESP_LOGW(TAG, "TX timeout");
     mode_ = LoRaMode::STANDBY;
-    return ESP_OK;
+    return ESP_ERR_TIMEOUT;
 }
 
 esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len, uint32_t timeout_ms) {
@@ -357,47 +363,50 @@ esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len,
     mode_ = LoRaMode::RX;
     ESP_LOGD(TAG, "RX started, timeout=%lu ms", timeout_ms);
 
-    uint32_t elapsed = 0;
-    while (is_busy() && elapsed < timeout_ms * 1000) {
-        esp_rom_delay_us(100);
-        elapsed += 100;
-    }
+    xEventGroupClearBits(event_group_, LORA_EVENT_RX_DONE_BIT | LORA_EVENT_RX_TIMEOUT_BIT);
 
-    if (elapsed >= timeout_ms * 1000) {
+    EventBits_t bits = xEventGroupWaitBits(
+        event_group_,
+        LORA_EVENT_RX_DONE_BIT | LORA_EVENT_RX_TIMEOUT_BIT,
+        pdTRUE,
+        pdFALSE,
+        pdMS_TO_TICK_COUNT(timeout_ms)
+    );
+
+    if (bits & LORA_EVENT_RX_TIMEOUT_BIT) {
         ESP_LOGW(TAG, "RX timeout");
         mode_ = LoRaMode::STANDBY;
-        if (callback_) {
-            callback_(LoRaEvent::RX_TIMEOUT);
-        }
         return ESP_ERR_TIMEOUT;
     }
 
-    uint8_t rx_buf_status[2] = {0};
-    read_reg(SX1262_CMD_GET_RX_BUFFER_STATUS, rx_buf_status, sizeof(rx_buf_status));
+    if (bits & LORA_EVENT_RX_DONE_BIT) {
+        uint8_t rx_buf_status[2] = {0};
+        read_reg(SX1262_CMD_GET_RX_BUFFER_STATUS, rx_buf_status, sizeof(rx_buf_status));
 
-    uint8_t rx_start = rx_buf_status[1];
-    *actual_len = rx_buf_status[0];
+        uint8_t rx_start = rx_buf_status[1];
+        *actual_len = rx_buf_status[0];
 
-    if (*actual_len > max_len) {
-        ESP_LOGW(TAG, "RX buffer too small");
-        *actual_len = max_len;
+        if (*actual_len > max_len) {
+            ESP_LOGW(TAG, "RX buffer too small");
+            *actual_len = max_len;
+        }
+
+        uint8_t cmd = 0x1F;
+        uint8_t rx_data[*actual_len + 1];
+        read_reg(cmd, rx_data, *actual_len + 1);
+        memcpy(data, rx_data + rx_start, *actual_len);
+
+        int8_t snr = (int8_t)read_reg(0x1D);
+        int8_t rssi = (int8_t)read_reg(0x1E);
+
+        ESP_LOGD(TAG, "RX complete: %d bytes, SNR=%d, RSSI=%d", *actual_len, snr, rssi);
+
+        mode_ = LoRaMode::STANDBY;
+        return ESP_OK;
     }
-
-    uint8_t cmd = 0x1F;
-    uint8_t rx_data[*actual_len + 1];
-    read_reg(cmd, rx_data, *actual_len + 1);
-    memcpy(data, rx_data + rx_start, *actual_len);
-
-    int8_t snr = (int8_t)read_reg(0x1D);
-    int8_t rssi = (int8_t)read_reg(0x1E);
-
-    ESP_LOGD(TAG, "RX complete: %d bytes, SNR=%d, RSSI=%d", *actual_len, snr, rssi);
 
     mode_ = LoRaMode::STANDBY;
-    if (callback_) {
-        callback_(LoRaEvent::RX_DONE);
-    }
-    return ESP_OK;
+    return ESP_ERR_TIMEOUT;
 }
 
 esp_err_t LoRaDriver::start_cad() {
@@ -448,34 +457,43 @@ esp_err_t LoRaDriver::wait_busy(uint32_t timeout_ms) {
     return ESP_OK;
 }
 
-void LoRaDriver::handle_irq() {
-    uint8_t irq_status = read_reg(0x0C);
-    write_reg(SX1262_CMD_CLR_IRQ_STATUS, &irq_status, 1);
+void LoRaDriver::dio1_isr_handler(void* arg) {
+    auto* self = static_cast<LoRaDriver*>(arg);
+    BaseType_t higher_priority_task_woken = pdFALSE;
+
+    uint8_t irq_status = self->read_reg(0x0C);
 
     if (irq_status & SX1262_IRQ_TX_DONE) {
-        mode_ = LoRaMode::STANDBY;
-        if (callback_) {
-            callback_(LoRaEvent::TX_DONE);
-        }
+        xEventGroupSetBitsFromISR(self->event_group_, LORA_EVENT_TX_DONE_BIT, &higher_priority_task_woken);
     }
-
     if (irq_status & SX1262_IRQ_RX_DONE) {
-        mode_ = LoRaMode::STANDBY;
-        if (callback_) {
-            callback_(LoRaEvent::RX_DONE);
+        xEventGroupSetBitsFromISR(self->event_group_, LORA_EVENT_RX_DONE_BIT, &higher_priority_task_woken);
+    }
+    if (irq_status & SX1262_IRQ_TIMEOUT) {
+        xEventGroupSetBitsFromISR(self->event_group_, LORA_EVENT_RX_TIMEOUT_BIT, &higher_priority_task_woken);
+    }
+
+    if (irq_status & SX1262_IRQ_TX_DONE) {
+        self->mode_ = LoRaMode::STANDBY;
+        if (self->callback_) {
+            self->callback_(LoRaEvent::TX_DONE);
+        }
+    }
+    if (irq_status & SX1262_IRQ_RX_DONE) {
+        self->mode_ = LoRaMode::STANDBY;
+        if (self->callback_) {
+            self->callback_(LoRaEvent::RX_DONE);
+        }
+    }
+    if (irq_status & SX1262_IRQ_TIMEOUT) {
+        self->mode_ = LoRaMode::STANDBY;
+        if (self->callback_) {
+            self->callback_(LoRaEvent::RX_TIMEOUT);
         }
     }
 
-    if (irq_status & SX1262_IRQ_CAD_DONE) {
-        if (callback_) {
-            callback_(LoRaEvent::CAD_DONE);
-        }
-    }
-
-    if (irq_status & SX1262_IRQ_CAD_DETECTED) {
-        if (callback_) {
-            callback_(LoRaEvent::CAD_DETECTED);
-        }
+    if (higher_priority_task_woken == pdTRUE) {
+        portYIELD_FROM_ISR();
     }
 }
 

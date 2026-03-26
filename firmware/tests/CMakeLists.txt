@@ -48,6 +48,7 @@ add_executable(test_lora_driver test_lora_driver.cpp
     src/esp_timer_mock.cpp
     src/gpio_mock.cpp
     src/spi_mock.cpp
+    src/event_groups_mock.cpp
     ${CMAKE_SOURCE_DIR}/../main/lora/sx1262.cpp
 )
 target_include_directories(test_lora_driver PRIVATE

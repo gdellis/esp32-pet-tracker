@@ -77,6 +77,7 @@ extern volatile uint32_t next_get_level_value;
 
 void reset_gpio_mock();
 void gpio_set_next_get_level(gpio_num_t pin, uint32_t value);
+void trigger_dio1_isr();
 }
 
 #endif
