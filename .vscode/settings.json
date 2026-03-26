@@ -1,0 +1,20 @@
+{
+  "idf.projectPath": "${workspaceFolder}/firmware",
+  "idf.cmakeCompilerArgs": [
+    "-S",
+    "${workspaceFolder}/firmware",
+    "-G",
+    "Ninja",
+    "-DPYTHON_DEPS_CHECKED=1",
+    "-DESP_PLATFORM=1"
+  ],
+  "idf.openOcdConfigs": [
+    "${workspaceFolder}/firmwareboard/esp32c3-builtin.cfg"
+  ],
+  "idf.buildPath": "${workspaceFolder}/firmware/build",
+  "idf.buildPathWin": "${workspaceFolder}\\firmware\\build",
+	"idf.sdkconfigFilePath": "${workspaceFolder}/firmware/sdkconfig",
+	"idf.svdFilePath": "${workspaceFolder}/firmware/esp32.svd",
+  "idf.telemetry": false,
+  "idf.unitTestFilePattern": "${workspaceFolder}/firmware/test/test_*.c"
+}

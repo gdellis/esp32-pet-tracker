@@ -7,13 +7,13 @@
 
 # Build directories
 firmware/build/
-firmware/sdkconfig
-firmware/sdkconfig.defaults
+sdkconfig
+sdkconfig.defaults
 dist/
 .embuild/
 
 # IDE
-.vscode/
+# .vscode/
 .idea/
 *.swp
 *.swo
