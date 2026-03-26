@@ -1,16 +1,10 @@
 #include "sx1262.hpp"
 #include "esp_log.h"
 #include "esp_rom_gpio.h"
-#include "soc/gpio_sig_map.h"
 #include <string.h>
 
 static const char* TAG = "sx1262";
 
-static constexpr uint8_t SX1262_REG_FSK_WHITENING = 0x08;
-static constexpr uint8_t SX1262_REG_FSK_CRC = 0x09;
-static constexpr uint8_t SX1262_REG_FSK_SYNC = 0x06;
-
-static constexpr uint8_t SX1262_REG_LORA_HEADER = 0x50;
 static constexpr uint8_t SX1262_REG_LORA_MODEM_CONFIG1 = 0x51;
 static constexpr uint8_t SX1262_REG_LORA_MODEM_CONFIG2 = 0x52;
 static constexpr uint8_t SX1262_REG_LORA_PREAMBLE_MSB = 0x54;
@@ -21,17 +15,20 @@ static constexpr uint8_t SX1262_CMD_SET_STANDBY = 0x80;
 static constexpr uint8_t SX1262_CMD_SET_FS = 0xC1;
 static constexpr uint8_t SX1262_CMD_SET_TX = 0x83;
 static constexpr uint8_t SX1262_CMD_SET_RX = 0x82;
-static constexpr uint8_t SX1262_CMD_SET_TX_CONTINUOUS = 0xD1;
 static constexpr uint8_t SX1262_CMD_SET_CAD = 0xC5;
 static constexpr uint8_t SX1262_CMD_SET_PKT_TYPE = 0x8A;
 static constexpr uint8_t SX1262_CMD_GET_PKT_TYPE = 0x11;
 static constexpr uint8_t SX1262_CMD_GET_STATUS = 0x12;
 static constexpr uint8_t SX1262_CMD_GET_RX_BUFFER_STATUS = 0x13;
+static constexpr uint8_t SX1262_CMD_GET_PKT_CONFIG = 0x14;
+static constexpr uint8_t SX1262_CMD_GET_IRQ_STATUS = 0x12;
+static constexpr uint8_t SX1262_CMD_CLR_IRQ_STATUS = 0x02;
+static constexpr uint8_t SX1262_CMD_SET_DIO_IRQ = 0x08;
 static constexpr uint8_t SX1262_CMD_SET_PKT_PARAM = 0x8C;
 static constexpr uint8_t SX1262_CMD_SET_FREQ = 0x86;
 static constexpr uint8_t SX1262_CMD_SET_TX_PARAMS = 0x8E;
-static constexpr uint8_t SX1262_CMD_SET_DIO_IRQ = 0x08;
-static constexpr uint8_t SX1262_CMD_CLR_IRQ_STATUS = 0x02;
+static constexpr uint8_t SX1262_CMD_SET_MODULATION = 0x90;
+static constexpr uint8_t SX1262_CMD_SET_RF_FREQ = 0x86;
 
 static constexpr uint8_t SX1262_PKT_TYPE_LORA = 0x01;
 static constexpr uint8_t SX1262_PKT_TYPE_FSK = 0x02;
@@ -41,6 +38,30 @@ static constexpr uint8_t SX1262_IRQ_RX_DONE = 0x02;
 static constexpr uint8_t SX1262_IRQ_CAD_DONE = 0x04;
 static constexpr uint8_t SX1262_IRQ_CAD_DETECTED = 0x08;
 static constexpr uint8_t SX1262_IRQ_TIMEOUT = 0x40;
+static constexpr uint8_t SX1262_IRQ_ALL = 0xFF;
+
+const char* LoRaDriver::mode_to_string(LoRaMode mode) {
+    switch (mode) {
+        case LoRaMode::SLEEP: return "SLEEP";
+        case LoRaMode::STANDBY: return "STANDBY";
+        case LoRaMode::TX: return "TX";
+        case LoRaMode::RX: return "RX";
+        case LoRaMode::CAD: return "CAD";
+        default: return "UNKNOWN";
+    }
+}
+
+const char* LoRaDriver::event_to_string(LoRaEvent event) {
+    switch (event) {
+        case LoRaEvent::TX_DONE: return "TX_DONE";
+        case LoRaEvent::RX_DONE: return "RX_DONE";
+        case LoRaEvent::RX_TIMEOUT: return "RX_TIMEOUT";
+        case LoRaEvent::CAD_DONE: return "CAD_DONE";
+        case LoRaEvent::CAD_DETECTED: return "CAD_DETECTED";
+        case LoRaEvent::ERROR: return "ERROR";
+        default: return "UNKNOWN";
+    }
+}
 
 LoRaDriver::LoRaDriver(spi_host_device_t spi_host, gpio_num_t mosi, gpio_num_t miso,
                        gpio_num_t sclk, gpio_num_t nss, gpio_num_t reset,
@@ -52,6 +73,7 @@ LoRaDriver::LoRaDriver(spi_host_device_t spi_host, gpio_num_t mosi, gpio_num_t m
     , frequency_(LORA_DEFAULT_FREQ)
     , tx_power_(LORA_DEFAULT_TX_POWER)
     , spreading_factor_(7)
+    , callback_(nullptr)
 {
 }
 
@@ -98,10 +120,28 @@ esp_err_t LoRaDriver::init() {
 
     ESP_ERROR_CHECK(reset());
     ESP_ERROR_CHECK(standby());
+    ESP_ERROR_CHECK(configure_modem());
     ESP_ERROR_CHECK(set_frequency(frequency_));
     ESP_ERROR_CHECK(set_tx_power(tx_power_));
 
-    ESP_LOGI(TAG, "SX1262 initialized successfully");
+    ESP_LOGI(TAG, "SX1262 initialized successfully on %s", mode_to_string(mode_));
+    return ESP_OK;
+}
+
+esp_err_t LoRaDriver::configure_modem() {
+    uint8_t pkt_type = SX1262_PKT_TYPE_LORA;
+    ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_PKT_TYPE, &pkt_type, 1));
+
+    uint8_t modem_cfg1 = 0x70;
+    uint8_t modem_cfg2 = 0x74;
+
+    write_reg(SX1262_REG_LORA_MODEM_CONFIG1, modem_cfg1);
+    write_reg(SX1262_REG_LORA_MODEM_CONFIG2, modem_cfg2);
+
+    uint16_t preamble = 8;
+    write_reg(SX1262_REG_LORA_PREAMBLE_MSB, (preamble >> 8) & 0xFF);
+    write_reg(SX1262_REG_LORA_PREAMBLE_LSB, preamble & 0xFF);
+
     return ESP_OK;
 }
 
@@ -131,7 +171,6 @@ esp_err_t LoRaDriver::standby() {
 }
 
 esp_err_t LoRaDriver::set_frequency(uint32_t freq_hz) {
-    uint8_t cmd = SX1262_CMD_SET_FREQ;
     uint64_t freq_reg = ((uint64_t)freq_hz << 25) / 1000000;
 
     uint8_t params[3] = {
@@ -140,19 +179,23 @@ esp_err_t LoRaDriver::set_frequency(uint32_t freq_hz) {
         (uint8_t)(freq_reg & 0xFF)
     };
 
-    ESP_ERROR_CHECK(write_reg(cmd, params, sizeof(params)));
+    ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_RF_FREQ, params, sizeof(params)));
     frequency_ = freq_hz;
     ESP_LOGD(TAG, "Frequency set to %lu Hz", freq_hz);
     return ESP_OK;
 }
 
 esp_err_t LoRaDriver::set_tx_power(int8_t power_dbm) {
-    uint8_t cmd = SX1262_CMD_SET_TX_PARAMS;
+    if (power_dbm < -9 || power_dbm > 22) {
+        ESP_LOGW(TAG, "TX power %d dBm out of range (-9 to 22)", power_dbm);
+        power_dbm = (power_dbm < -9) ? -9 : 22;
+    }
+
     uint8_t params[2] = {
         (uint8_t)power_dbm,
         0x01
     };
-    ESP_ERROR_CHECK(write_reg(cmd, params, sizeof(params)));
+    ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_TX_PARAMS, params, sizeof(params)));
     tx_power_ = power_dbm;
     ESP_LOGD(TAG, "TX power set to %d dBm", power_dbm);
     return ESP_OK;
@@ -174,8 +217,6 @@ esp_err_t LoRaDriver::set_spreading_factor(uint8_t sf) {
         case 11: modcfg1 = 0xB0; break;
         case 12: modcfg1 = 0xC0; break;
     }
-
-    write_reg(SX1262_REG_LORA_MODEM_CONFIG2, 0x74);
 
     uint8_t reg = read_reg(SX1262_REG_LORA_MODEM_CONFIG1);
     write_reg(SX1262_REG_LORA_MODEM_CONFIG1, (reg & 0x0F) | modcfg1);
@@ -215,15 +256,19 @@ esp_err_t LoRaDriver::set_coding_rate(uint8_t cr) {
     return ESP_OK;
 }
 
+esp_err_t LoRaDriver::set_preamble_length(uint16_t len) {
+    write_reg(SX1262_REG_LORA_PREAMBLE_MSB, (len >> 8) & 0xFF);
+    write_reg(SX1262_REG_LORA_PREAMBLE_LSB, len & 0xFF);
+    ESP_LOGD(TAG, "Preamble length set to %d", len);
+    return ESP_OK;
+}
+
 esp_err_t LoRaDriver::send(const uint8_t* data, size_t len) {
-    if (len > 255) {
+    if (len > LORA_MAX_PACKET_SIZE) {
         return ESP_ERR_INVALID_SIZE;
     }
 
-    ESP_ERROR_CHECK(set_operating_mode(LoRaMode::STANDBY));
-
-    uint8_t tx_params = SX1262_CMD_SET_TX;
-    ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_PKT_TYPE, &tx_params, 1));
+    ESP_ERROR_CHECK(standby());
 
     uint8_t pkt_params[6] = {
         0x00,
@@ -245,14 +290,23 @@ esp_err_t LoRaDriver::send(const uint8_t* data, size_t len) {
     ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_TX, timeout, sizeof(timeout)));
 
     mode_ = LoRaMode::TX;
+    ESP_LOGD(TAG, "TX started, %d bytes", len);
 
-    uint32_t timeout_cnt = 100000;
-    while (is_busy() && timeout_cnt--) {
+    return ESP_OK;
+}
+
+esp_err_t LoRaDriver::send_blocking(const uint8_t* data, size_t len, uint32_t timeout_ms) {
+    ESP_ERROR_CHECK(send(data, len));
+
+    uint32_t elapsed = 0;
+    while (is_busy() && elapsed < timeout_ms * 1000) {
         esp_rom_delay_us(100);
+        elapsed += 100;
     }
 
-    if (timeout_cnt == 0) {
+    if (elapsed >= timeout_ms * 1000) {
         ESP_LOGW(TAG, "TX timeout");
+        mode_ = LoRaMode::STANDBY;
         return ESP_ERR_TIMEOUT;
     }
 
@@ -266,7 +320,7 @@ esp_err_t LoRaDriver::send(const uint8_t* data, size_t len) {
 }
 
 esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len, uint32_t timeout_ms) {
-    ESP_ERROR_CHECK(set_operating_mode(LoRaMode::STANDBY));
+    ESP_ERROR_CHECK(standby());
 
     uint8_t pkt_type = SX1262_PKT_TYPE_LORA;
     ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_PKT_TYPE, &pkt_type, 1));
@@ -286,6 +340,7 @@ esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len,
     ESP_ERROR_CHECK(write_reg(SX1262_CMD_SET_RX, timeout, sizeof(timeout)));
 
     mode_ = LoRaMode::RX;
+    ESP_LOGD(TAG, "RX started, timeout=%lu ms", timeout_ms);
 
     uint32_t elapsed = 0;
     while (is_busy() && elapsed < timeout_ms * 1000) {
@@ -296,6 +351,9 @@ esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len,
     if (elapsed >= timeout_ms * 1000) {
         ESP_LOGW(TAG, "RX timeout");
         mode_ = LoRaMode::STANDBY;
+        if (callback_) {
+            callback_(LoRaEvent::RX_TIMEOUT);
+        }
         return ESP_ERR_TIMEOUT;
     }
 
@@ -315,18 +373,20 @@ esp_err_t LoRaDriver::receive(uint8_t* data, size_t max_len, size_t* actual_len,
     read_reg(cmd, rx_data, *actual_len + 1);
     memcpy(data, rx_data + rx_start, *actual_len);
 
-    uint8_t irq_status = read_reg(0x0C);
-    if (irq_status & SX1262_IRQ_RX_DONE) {
-        int8_t snr = (int8_t)read_reg(0x1D);
-        ESP_LOGD(TAG, "RX complete: %d bytes, SNR=%d", *actual_len, snr);
-    }
+    int8_t snr = (int8_t)read_reg(0x1D);
+    int8_t rssi = (int8_t)read_reg(0x1E);
+
+    ESP_LOGD(TAG, "RX complete: %d bytes, SNR=%d, RSSI=%d", *actual_len, snr, rssi);
 
     mode_ = LoRaMode::STANDBY;
+    if (callback_) {
+        callback_(LoRaEvent::RX_DONE);
+    }
     return ESP_OK;
 }
 
 esp_err_t LoRaDriver::start_cad() {
-    ESP_ERROR_CHECK(set_operating_mode(LoRaMode::STANDBY));
+    ESP_ERROR_CHECK(standby());
 
     uint8_t cmd = SX1262_CMD_SET_CAD;
     ESP_ERROR_CHECK(write_reg(cmd, nullptr, 0));
@@ -335,6 +395,7 @@ esp_err_t LoRaDriver::start_cad() {
     write_reg(SX1262_CMD_SET_DIO_IRQ, &irq_mask, 1);
 
     mode_ = LoRaMode::CAD;
+    ESP_LOGD(TAG, "CAD started");
     return ESP_OK;
 }
 
@@ -344,7 +405,15 @@ bool LoRaDriver::is_channel_active() {
     }
 
     uint8_t irq_status = read_reg(0x0C);
-    return (irq_status & SX1262_IRQ_CAD_DETECTED) != 0;
+    bool detected = (irq_status & SX1262_IRQ_CAD_DETECTED) != 0;
+
+    ESP_LOGD(TAG, "CAD result: %s", detected ? "channel active" : "channel clear");
+
+    if (callback_) {
+        callback_(detected ? LoRaEvent::CAD_DETECTED : LoRaEvent::CAD_DONE);
+    }
+
+    return detected;
 }
 
 bool LoRaDriver::is_busy() const {
@@ -364,23 +433,35 @@ esp_err_t LoRaDriver::wait_busy(uint32_t timeout_ms) {
     return ESP_OK;
 }
 
-esp_err_t LoRaDriver::set_operating_mode(LoRaMode mode) {
-    if (mode_ == mode) {
-        return ESP_OK;
+void LoRaDriver::handle_irq() {
+    uint8_t irq_status = read_reg(0x0C);
+    write_reg(SX1262_CMD_CLR_IRQ_STATUS, &irq_status, 1);
+
+    if (irq_status & SX1262_IRQ_TX_DONE) {
+        mode_ = LoRaMode::STANDBY;
+        if (callback_) {
+            callback_(LoRaEvent::TX_DONE);
+        }
     }
 
-    switch (mode) {
-        case LoRaMode::SLEEP:
-            ESP_ERROR_CHECK(sleep());
-            break;
-        case LoRaMode::STANDBY:
-            ESP_ERROR_CHECK(standby());
-            break;
-        default:
-            break;
+    if (irq_status & SX1262_IRQ_RX_DONE) {
+        mode_ = LoRaMode::STANDBY;
+        if (callback_) {
+            callback_(LoRaEvent::RX_DONE);
+        }
     }
 
-    return ESP_OK;
+    if (irq_status & SX1262_IRQ_CAD_DONE) {
+        if (callback_) {
+            callback_(LoRaEvent::CAD_DONE);
+        }
+    }
+
+    if (irq_status & SX1262_IRQ_CAD_DETECTED) {
+        if (callback_) {
+            callback_(LoRaEvent::CAD_DETECTED);
+        }
+    }
 }
 
 esp_err_t LoRaDriver::write_reg(uint8_t addr, const uint8_t* data, size_t len) {
