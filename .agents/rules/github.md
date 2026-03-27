@@ -1,5 +1,13 @@
 # GitHub Rules for AI Agents
 
+## CRITICAL: Never Merge Without Explicit Permission
+
+**DO NOT run `gh pr merge` or any merge commands unless the user explicitly asks you to.**
+
+- Always wait for CI to pass and user confirmation before merging
+- After CI passes, report the status and ask the user if they want to merge
+- Never assume "CI passed, so I'll merge it" is the correct action
+
 ## Core Mandates
 
 1. **Pull Requests**: All changes to main/master must go through a pull request.
