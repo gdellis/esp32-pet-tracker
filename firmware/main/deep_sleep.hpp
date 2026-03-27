@@ -46,7 +46,11 @@ public:
      */
     static bool is_wakeup_caused_by_timer(void)
     {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        return (esp_sleep_get_wakeup_causes() & ESP_SLEEP_WAKEUP_TIMER) != 0;
+#else
         return esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_TIMER;
+#endif
     }
 
     /**
@@ -55,7 +59,11 @@ public:
      */
     static bool is_wakeup_caused_by_gpio(void)
     {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        return (esp_sleep_get_wakeup_causes() & ESP_SLEEP_WAKEUP_EXT1) != 0;
+#else
         return esp_sleep_get_wakeup_cause() == ESP_SLEEP_WAKEUP_EXT1;
+#endif
     }
 
     /**
@@ -64,7 +72,11 @@ public:
      */
     static uint64_t get_wakeup_cause(void)
     {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+        return esp_sleep_get_wakeup_causes();
+#else
         return esp_sleep_get_wakeup_cause();
+#endif
     }
 };
 

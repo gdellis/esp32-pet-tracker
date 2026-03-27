@@ -33,7 +33,7 @@ See `firmware/main/board_config.h` for ESP32S3/ESP32C6 pin mappings.
 ### Dependencies
 
 - `driver` - GPIO, UART, SPI, I2C
-- `freertos` - Real-time OS  
+- `freertos` - Real-time OS
 - `esp_timer` - High-resolution timer
 - `nvs_flash` - Non-volatile storage
 - `esp_bt` - Bluetooth
