@@ -19,6 +19,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Check if firmware build is needed
+  check-firmware-changed:
+    name: Check Firmware Changed
+    runs-on: ubuntu-latest
+    outputs:
+      firmware_changed: ${{ steps.changed.outputs.firmware_changed }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check firmware changes
+        id: changed
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            git diff --name-only HEAD~1 HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
+          else
+            git diff --name-only ${{ github.base_ref }} HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
+          fi
+
   # Lint C++ (non-blocking - clang-format style differs from ESP-IDF conventions)
   lint-cpp:
     name: Lint C++
@@ -59,8 +79,7 @@ jobs:
 
       - name: Install shellcheck
         run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
+          sudo apt-get update && sudo apt-get install -y shellcheck
 
       - name: Run shellcheck
         run: |
@@ -101,18 +120,32 @@ jobs:
   build-firmware:
     name: Build Firmware
     runs-on: ubuntu-latest
-
+    needs: check-firmware-changed
+    if: needs.check-firmware-changed.outputs.firmware_changed == 'true'
     container: espressif/idf:v6.0
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Cache ccache and ESP-IDF
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/ccache
+            ~/.espressif
+          key: esp32-ccache-${{ github.sha }}
+          restore-keys: |
+            esp32-ccache-
+
       - name: Build firmware
         run: |
           . /opt/esp/idf/export.sh
+          ccache -M 100M
+          ccache -z
           cd firmware
           idf.py build
+          ccache -s
 
       - name: Upload build artifacts
         if: always()
@@ -126,6 +159,8 @@ jobs:
   host-tests:
     name: Host Tests
     runs-on: ubuntu-latest
+    needs: check-firmware-changed
+    if: needs.check-firmware-changed.outputs.firmware_changed == 'true'
 
     steps:
       - name: Checkout
@@ -139,17 +174,27 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cmake-
 
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: host-ccache-${{ github.sha }}
+          restore-keys: |
+            host-ccache-
+
       - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y cmake build-essential
+          sudo apt-get update && sudo apt-get install -y cmake build-essential ccache
 
       - name: Configure & Build tests
         run: |
+          ccache -M 50M
+          ccache -z
           cd firmware/tests
           mkdir -p build && cd build
           cmake ..
           make -j$(nproc)
+          ccache -s
 
       - name: Run tests
         run: |
@@ -158,3 +203,5 @@ jobs:
           ./test_button_handler
           ./test_led_driver
           ./test_lora_driver
+          ./test_geofence
+          ./test_ble
