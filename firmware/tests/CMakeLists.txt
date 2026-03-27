@@ -62,3 +62,12 @@ target_include_directories(test_ble PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 target_link_libraries(test_ble PRIVATE Catch2::Catch2WithMain)
+
+add_executable(test_geofence test_geofence.cpp
+    ${CMAKE_SOURCE_DIR}/../main/geofence.cpp
+)
+target_include_directories(test_geofence PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/../main
+)
+target_link_libraries(test_geofence PRIVATE Catch2::Catch2WithMain m)

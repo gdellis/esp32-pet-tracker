@@ -482,8 +482,8 @@ def geofences():
 | 4 | BLE GATT server | ✅ Done (PR #9) |
 | 4 | LIS3DH accelerometer | ✅ Done (PR #10) |
 | 5 | State machine | ✅ Done (PR #11) |
-| 6 | NVS config storage | Pending |
-| 7 | Motion-aware sleep | Pending |
+| 6 | NVS config storage | ✅ Done (PR #12) |
+| 7 | Motion-aware sleep | ✅ Done (PR #11) |
 | 8 | Geofencing | Pending |
 | 9 | Integration testing | Pending |
 | 10 | Base station (Pi + Python) | Pending |

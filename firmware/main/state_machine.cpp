@@ -1,16 +1,18 @@
 #include "state_machine.hpp"
 #include "esp_log.h"
 #include "esp_sleep.h"
+#include "esp_timer.h"
 #include "driver/gpio.h"
+#include "freertos/task.h"
+#include "deep_sleep.hpp"
 
 static const char* TAG = "tracker";
 
-TrackerStateMachine::TrackerStateMachine()
-    : state_(TrackerState::INIT),
-      wake_count_(0),
-      last_activity_time_(0),
-      gps_fix_obtained_(false),
-      is_moving_(false) {}
+TrackerStateMachine::TrackerStateMachine(Gps& gps, LoRaDriver& lora, Accelerometer& accel)
+    : ctx_({TrackerState::INIT, WakeSource::NONE, 0, false, false, 0}),
+      gps_(gps),
+      lora_(lora),
+      accel_(accel) {}
 
 void TrackerStateMachine::init() {
     transition_to(TrackerState::IDLE);
@@ -18,13 +20,13 @@ void TrackerStateMachine::init() {
 
 void TrackerStateMachine::run() {
     while (true) {
-        switch (state_) {
+        switch (ctx_.state) {
         case TrackerState::INIT:
             transition_to(TrackerState::IDLE);
             break;
 
         case TrackerState::IDLE:
-            last_activity_time_ = esp_timer_get_time() / 1000;
+            ctx_.last_activity_time = esp_timer_get_time() / 1000;
             transition_to(TrackerState::ACQUIRING_GPS);
             break;
 
@@ -32,10 +34,10 @@ void TrackerStateMachine::run() {
             int64_t start_time = esp_timer_get_time() / 1000;
             bool timeout = false;
 
-            while (!gps_fix_obtained_ && !timeout) {
-                if (gps.update()) {
-                    if (gps.has_fix()) {
-                        gps_fix_obtained_ = true;
+            while (!ctx_.gps_fix_obtained && !timeout) {
+                if (gps_.update()) {
+                    if (gps_.has_fix()) {
+                        ctx_.gps_fix_obtained = true;
                         ESP_LOGI(TAG, "GPS fix obtained");
                         break;
                     }
@@ -55,22 +57,22 @@ void TrackerStateMachine::run() {
         }
 
         case TrackerState::TRANSMITTING:
-            if (gps.has_fix()) {
-                const auto& data = gps.get_data();
+            if (gps_.has_fix()) {
+                const auto& data = gps_.get_data();
                 ESP_LOGI(TAG, "TX: lat=%.6f, lon=%.6f, alt=%.1f",
-                         data.latitude, data.longityde, data.altitude);
+                         data.latitude, data.longitude, data.altitude);
             } else {
                 ESP_LOGI(TAG, "TX: no GPS fix, will send invalid");
             }
 
-            determine_sleep_duration(is_moving_);
+            determine_sleep_duration(ctx_.is_moving);
             transition_to(TrackerState::DEEP_SLEEP);
             break;
 
         case TrackerState::DEEP_SLEEP: {
-            uint32_t sleep_ms = is_moving_ ? DEFAULT_SLEEP_INTERVAL_MS : STATIONARY_SLEEP_INTERVAL_MS;
+            uint32_t sleep_ms = ctx_.is_moving ? DEFAULT_SLEEP_INTERVAL_MS : STATIONARY_SLEEP_INTERVAL_MS;
             ESP_LOGI(TAG, "Entering deep sleep for %u ms (moving=%s)",
-                     sleep_ms, is_moving_ ? "yes" : "no");
+                     sleep_ms, ctx_.is_moving ? "yes" : "no");
             sleep(sleep_ms);
 
             WakeSource wake = get_wake_source();
@@ -80,13 +82,13 @@ void TrackerStateMachine::run() {
                      wake == WakeSource::MOTION ? "motion" : "unknown");
 
             if (wake == WakeSource::MOTION) {
-                is_moving_ = true;
+                ctx_.is_moving = true;
             } else if (wake == WakeSource::TIMER) {
-                is_moving_ = false;
+                ctx_.is_moving = false;
             }
 
-            wake_count_++;
-            gps_fix_obtained_ = false;
+            ctx_.wake_count++;
+            ctx_.gps_fix_obtained = false;
             transition_to(TrackerState::IDLE);
             break;
         }
@@ -100,18 +102,25 @@ void TrackerStateMachine::run() {
 }
 
 void TrackerStateMachine::transition_to(TrackerState new_state) {
-    state_ = new_state;
+    ctx_.state = new_state;
     ESP_LOGD(TAG, "State -> %s",
-             state_ == TrackerState::INIT ? "INIT" :
-             state_ == TrackerState::IDLE ? "IDLE" :
-             state_ == TrackerState::ACQUIRING_GPS ? "ACQUIRING_GPS" :
-             state_ == TrackerState::TRANSMITTING ? "TRANSMITTING" :
-             state_ == TrackerState::DEEP_SLEEP ? "DEEP_SLEEP" : "ERROR");
+             ctx_.state == TrackerState::INIT ? "INIT" :
+             ctx_.state == TrackerState::IDLE ? "IDLE" :
+             ctx_.state == TrackerState::ACQUIRING_GPS ? "ACQUIRING_GPS" :
+             ctx_.state == TrackerState::TRANSMITTING ? "TRANSMITTING" :
+             ctx_.state == TrackerState::DEEP_SLEEP ? "DEEP_SLEEP" : "ERROR");
 }
 
 WakeSource TrackerStateMachine::get_wake_source() {
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
+    uint64_t causes = esp_sleep_get_wakeup_causes();
+    if (causes & ESP_SLEEP_WAKEUP_TIMER) {
+        return WakeSource::TIMER;
+    } else if (causes & (ESP_SLEEP_WAKEUP_EXT1 | ESP_SLEEP_WAKEUP_GPIO)) {
+        return WakeSource::BUTTON;
+    }
+#else
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
-
     switch (cause) {
     case ESP_SLEEP_WAKEUP_TIMER:
         return WakeSource::TIMER;
@@ -122,6 +131,8 @@ WakeSource TrackerStateMachine::get_wake_source() {
     default:
         return WakeSource::NONE;
     }
+#endif
+    return WakeSource::NONE;
 }
 
 void TrackerStateMachine::sleep(uint32_t duration_ms) {
@@ -130,5 +141,5 @@ void TrackerStateMachine::sleep(uint32_t duration_ms) {
 }
 
 void TrackerStateMachine::determine_sleep_duration(bool is_moving) {
-    is_moving_ = is_moving;
+    ctx_.is_moving = is_moving;
 }

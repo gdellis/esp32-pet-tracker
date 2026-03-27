@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "esp_err.h"
 #include "driver/gpio.h"
+#include "driver/i2c.h"
 
 #define LIS3DH_I2C_ADDR 0x19
 

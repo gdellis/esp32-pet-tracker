@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "config.cpp" "state_machine.cpp" "accelerometer.cpp" "main.cpp"
+    SRCS "geofence.cpp" "config.cpp" "state_machine.cpp" "accelerometer.cpp" "main.cpp"
     "gpio_driver.cpp"
     "led_driver.cpp"
     "button_handler.cpp"
