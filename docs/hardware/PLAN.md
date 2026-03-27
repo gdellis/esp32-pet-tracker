@@ -468,6 +468,115 @@ def geofences():
 
 ---
 
+## Phase 12: PCB Design
+
+### 12.1 KiCad Project Setup
+
+- [ ] Create KiCad project in `hardware/tracker/`
+- [ ] Configure project settings (board size, layers, clearance)
+- [ ] Add symbol libraries for custom components
+
+### 12.2 Component Footprints
+
+- [ ] ESP32-C6-WROOM-1C module
+- [ ] SX1262 LoRa module
+- [ ] GPS module (u-blox NEO-6M or compatible)
+- [ ] LIS3DH accelerometer
+- [ ] MCP1700 LDO
+- [ ] TP4056 LiPo charger
+- [ ] N-channel MOSFET (AO3400 or similar)
+- [ ] Passive components (resistors, capacitors)
+- [ ] Connectors (JST-PH for battery, U.FL for antenna)
+
+### 12.3 Schematic Entry
+
+- [ ] Power tree: LiPo → MCP1700 → 3.3V rails
+- [ ] ESP32-C6 minimum circuit (power, reset, boot)
+- [ ] SX1262 SPI interface and antenna
+- [ ] GPS UART interface
+- [ ] LIS3DH I2C interface
+- [ ] Battery voltage divider to ADC
+- [ ] GPS power switch (MOSFET)
+- [ ] LED and button circuits
+
+### 12.4 PCB Layout
+
+- [ ] Module placement (ESP32-C6, SX1262, GPS, LIS3DH)
+- [ ] RF antenna considerations (SX1262 + GPS)
+- [ ] Power plane and ground pour
+- [ ] Decoupling capacitors near power pins
+- [ ] UART/SPI trace routing
+- [ ] Manufacturing DFM checks
+
+### 12.5 Manufacturing
+
+- [ ] Generate Gerber files
+- [ ] Create drill files ( Excellon)
+- [ ] Generate BOM (interactive HTML)
+- [ ] Order PCB prototype (JLCPCB, PCBWay, etc.)
+- [ ] Order components from BOM
+
+### Deliverables
+```
+hardware/tracker/
+├── tracker.pro           # KiCad project
+├── tracker.sch          # Schematic
+├── tracker.kicad_pcb    # PCB layout
+├── bom/                  # Manufacturing files
+│   ├── Gerber.zip
+│   ├── drill_files.zip
+│   └── BOM.csv
+└── footprint/           # Custom footprints if needed
+```
+
+---
+
+## Phase 13: Enclosure Design
+
+### 13.1 CAD Model Setup
+
+- [ ] Create FreeCAD/OpenSCAD project in `hardware/enclosure/`
+- [ ] Import PCB dimensions from KiCad
+- [ ] Add component heights (ESP32-C6 module, SX1262, GPS, LIS3DH, battery)
+
+### 13.2 Mechanical Design
+
+- [ ] Bottom case (holds PCB, battery)
+- [ ] Top case (antenna clearance, LED window)
+- [ ] Gasket groove (silicone gasket seal)
+- [ ] Battery compartment
+- [ ] Strap mounting holes
+
+### 13.3 Antenna Considerations
+
+- [ ] LoRa U.FL antenna placement
+- [ ] GPS patch antenna clearance
+- [ ] Ground plane requirements
+
+### 13.4 Waterproofing
+
+- [ ] Silicone gasket design (2mm x 5mm channel)
+- [ ] Lens/LED window seal
+- [ ] Charging port access (rubber plug)
+
+### 13.5 3D Printing
+
+- [ ] Test print fit with PCB
+- [ ] Iterate on gasket groove
+- [ ] Wall thickness optimization (2-3mm)
+- [ ] Print settings: PETG 250°C, 20% infill
+
+### Deliverables
+```
+hardware/enclosure/
+├── case_bottom.fcstd    # FreeCAD file
+├── case_top.fcstd
+├── gasket.stl           # 3D printable gasket
+└── print_settings/     # Slicer profiles
+```
+
+---
+
 ## Implementation Order Summary
 
 | Phase | Module | Status |
@@ -484,10 +593,12 @@ def geofences():
 | 5 | State machine | ✅ Done (PR #11) |
 | 6 | NVS config storage | ✅ Done (PR #12) |
 | 7 | Motion-aware sleep | ✅ Done (PR #11) |
-| 8 | Geofencing | Pending |
+| 8 | Geofencing | ✅ Done (PR #13, #14) |
 | 9 | Integration testing | Pending |
 | 10 | Base station (Pi + Python) | Pending |
 | 11 | Flask Web UI | Pending |
+| 12 | PCB design | Pending |
+| 13 | Enclosure design | Pending |
 
 ---
 
