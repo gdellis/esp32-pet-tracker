@@ -56,3 +56,9 @@ target_include_directories(test_lora_driver PRIVATE
     ${CMAKE_SOURCE_DIR}/../main
 )
 target_link_libraries(test_lora_driver PRIVATE Catch2::Catch2WithMain)
+
+add_executable(test_ble test_ble.cpp)
+target_include_directories(test_ble PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(test_ble PRIVATE Catch2::Catch2WithMain)

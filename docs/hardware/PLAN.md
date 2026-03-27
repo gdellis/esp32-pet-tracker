@@ -479,7 +479,7 @@ def geofences():
 | 2 | LED driver | ✅ Done |
 | 3 | Unit tests with mocks | ✅ Done (PR #3, PR #7) |
 | 4 | LoRa SX1262 driver | ✅ Done (PR #6, PR #7) |
-| 4 | BLE GATT server | Pending |
+| 4 | BLE GATT server | In Progress (PR #9) |
 | 4 | LIS3DH accelerometer | Pending |
 | 5 | State machine | Pending |
 | 6 | NVS config storage | Pending |
