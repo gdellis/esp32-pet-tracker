@@ -481,7 +481,7 @@ def geofences():
 | 4 | LoRa SX1262 driver | ✅ Done (PR #6, PR #7) |
 | 4 | BLE GATT server | ✅ Done (PR #9) |
 | 4 | LIS3DH accelerometer | ✅ Done (PR #10) |
-| 5 | State machine | Pending |
+| 5 | State machine | ✅ Done (PR #11) |
 | 6 | NVS config storage | Pending |
 | 7 | Motion-aware sleep | Pending |
 | 8 | Geofencing | Pending |
