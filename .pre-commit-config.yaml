@@ -21,7 +21,8 @@ repos:
   rev: v0.21.0
   hooks:
   - id: markdownlint-cli2
-    args: [ '--config', '.markdownlint.json', '--ignore', '.opencode/' ]
+    exclude: '^\.opencode/'
+    args: [ '--config', '.markdownlint.json' ]
 
 # Shell linting
 - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -36,3 +37,4 @@ repos:
   - id: clang-format
     types_or: [c++, c]
     args: ['-style=file']
+    files: ^firmware/
