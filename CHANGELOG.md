@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed integer overflow in accelerometer threshold calculation
 - Fixed geofence test expectation for small radius zones
 - Added missing mocks: `vEventGroupDelete()`, `gpio_install_isr_service()`
+- Phase 3: `TrackerStateMachine::init()` now propagates errors from `Config::init()` and `Config::load()`
 
 ## [0.2.0] - 2025-04-05
 
