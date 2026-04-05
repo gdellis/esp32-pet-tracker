@@ -47,21 +47,25 @@ stateDiagram-v2
 ## Transitions
 
 ### IDLE → ACQUIRING_GPS
+
 - Updates `last_activity_time`
 - GPS is powered on
 
 ### ACQUIRING_GPS → TRANSMITTING
+
 - GPS is powered off
 - If fix obtained: `check_geofence()` runs
   - If outside zone: BLE alert sent, `is_moving = true`
 - Location data transmitted via LoRa
 
 ### DEEP_SLEEP
+
 - Determines sleep duration from wake source and motion state
 - Configures wakeup sources (GPIO, accelerometer)
 - Enters deep sleep via FreeRTOS idle task
 
 ### Wake → IDLE
+
 - `last_wake` updated from wake source
 - `is_moving` set true if motion wake, false if timer wake
 - GPS fix flag cleared for next cycle
@@ -69,6 +73,7 @@ stateDiagram-v2
 ## Geofence Integration
 
 After GPS fix is obtained in `ACQUIRING_GPS` state:
+
 1. Current location is checked against all configured zones
 2. If outside any zone: breach detected
 3. BLE alert notification sent with zone index and location
