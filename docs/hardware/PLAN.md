@@ -517,6 +517,7 @@ def geofences():
 - [ ] Order components from BOM
 
 ### Deliverables
+
 ```
 hardware/tracker/
 ├── tracker.pro           # KiCad project
@@ -567,6 +568,7 @@ hardware/tracker/
 - [ ] Print settings: PETG 250°C, 20% infill
 
 ### Deliverables
+
 ```
 hardware/enclosure/
 ├── case_bottom.fcstd    # FreeCAD file

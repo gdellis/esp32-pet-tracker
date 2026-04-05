@@ -14,6 +14,7 @@ Rules for AI agents (like OpenCode) working on this repository alongside a human
 ## Before Creating a PR
 
 ### Checklist
+
 - [ ] All files changed are in the PR
 - [ ] CMakeLists.txt updated if adding new source files
 - [ ] Tests added/updated if adding functionality
@@ -21,6 +22,7 @@ Rules for AI agents (like OpenCode) working on this repository alongside a human
 - [ ] Commit message is clear and follows conventions
 
 ### Branch Naming
+
 - `feature/*` - New features
 - `fix/*` - Bug fixes
 - `refactor/*` - Code refactoring (no behavior change)

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <string.h>
 
 constexpr int32_t COORD_SCALE = 1000000;
 
 struct GeoPoint {
-    int32_t latitude;   // degrees * 1e6
-    int32_t longitude;   // degrees * 1e6
+	int32_t latitude;  // degrees * 1e6
+	int32_t longitude; // degrees * 1e6
 };
 
 struct CircleZone {
-    char name[31];  // Max 31 chars + null terminator for safety
-    GeoPoint center;
-    uint32_t radius_m;   // meters
+	char name[31]; // Max 31 chars + null terminator for safety
+	GeoPoint center;
+	uint32_t radius_m; // meters
 };
 
 /**
@@ -23,14 +23,14 @@ struct CircleZone {
  * @param lon Longitude in degrees * 1e6
  * @return true if coordinates are valid, false otherwise
  */
-bool coordinates_valid(int32_t lat, int32_t lon);
+bool coordinates_valid (int32_t lat, int32_t lon);
 
 /**
  * @brief Safely copy zone name with length validation
  * @param zone Target zone
  * @param name Source name string (max 31 chars)
  */
-void zone_set_name(CircleZone& zone, const char* name);
+void zone_set_name (CircleZone& zone, const char* name);
 
 /**
  * @brief Check if a point is within a circular geofence zone
@@ -38,7 +38,7 @@ void zone_set_name(CircleZone& zone, const char* name);
  * @param zone The circular zone to check against
  * @return true if point is within the zone (including boundary), false otherwise
  */
-bool point_in_circle(const GeoPoint& point, const CircleZone& zone);
+bool point_in_circle (const GeoPoint& point, const CircleZone& zone);
 
 /**
  * @brief Calculate the Haversine distance between two geographic points
@@ -48,4 +48,4 @@ bool point_in_circle(const GeoPoint& point, const CircleZone& zone);
  * @param lon2 Longitude of second point in degrees * 1e6
  * @return Distance between points in meters
  */
-int64_t haversine_distance(int32_t lat1, int32_t lon1, int32_t lat2, int32_t lon2);
+int64_t haversine_distance (int32_t lat1, int32_t lon1, int32_t lat2, int32_t lon2);

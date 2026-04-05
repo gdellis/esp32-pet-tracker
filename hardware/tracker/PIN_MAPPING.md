@@ -142,6 +142,7 @@ KiCad schematic uses:
 Target: **60mm × 40mm** (2-layer PCB)
 
 Suggested outline:
+
 ```
     ┌──────────────────────────────┐
     │                              │

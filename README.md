@@ -80,7 +80,9 @@ cd firmware
 
 ### IDE Setup
 
-**Note:** The ESP-IDF framework uses the Xtensa toolchain (Xtensa-specific compiler flags like `-mlongcalls`, `-fno-shrink-wrap`, `-fstrict-volatile-bitfields`). When using clangd or other GCC-based LSP servers, you may see warnings such as:
+**Note:** The ESP-IDF framework uses the Xtensa toolchain (Xtensa-specific compiler
+flags like `-mlongcalls`, `-fno-shrink-wrap`, `-fstrict-volatile-bitfields`).
+When using clangd or other GCC-based LSP servers, you may see warnings such as:
 
 ```
 Unknown argument '-mlongcalls'; did you mean '-mlong-calls'?
