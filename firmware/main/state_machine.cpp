@@ -13,7 +13,7 @@ static const char* TAG = "tracker";
 TrackerStateMachine::TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel,
 										  BleServer& ble, LedDriver& led)
 	: ctx_ ({ TrackerState::INIT, WakeSource::NONE, 0, false, false, 0, 0 }), gps_ (gps),
-	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led) {}
+	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led), button_ (BOARD_BUTTON_PIN) {}
 
 void
 TrackerStateMachine::init () {
@@ -107,6 +107,7 @@ TrackerStateMachine::run () {
 			sleep (sleep_ms);
 
 			WakeSource wake = get_wake_source ();
+			ctx_.last_wake = wake;
 			ESP_LOGI (TAG, "Woke up from: %s",
 					  wake == WakeSource::TIMER	   ? "timer"
 					  : wake == WakeSource::BUTTON ? "button"
@@ -176,6 +177,7 @@ TrackerStateMachine::sleep (uint32_t duration_ms) {
 void
 TrackerStateMachine::configure_wakeup_sources () {
 	gpio_wakeup_enable (BOARD_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+	esp_sleep_enable_gpio_wakeup ();
 	accel_.enable_wakeup (BOARD_ACCEL_INT_PIN);
 }
 
@@ -198,8 +200,16 @@ TrackerStateMachine::update_activity_time () {
 	ctx_.last_activity_time = esp_timer_get_time () / 1000;
 }
 
+bool
+TrackerStateMachine::check_button () {
+	return button_.check_pressed ();
+}
+
 uint32_t
 TrackerStateMachine::get_sleep_duration () const {
+	if (ctx_.last_wake == WakeSource::BUTTON) {
+		return BUTTON_WAKE_SLEEP_MS;
+	}
 	return ctx_.is_moving ? config_.sleep_interval_ms : config_.stationary_interval_ms;
 }
 

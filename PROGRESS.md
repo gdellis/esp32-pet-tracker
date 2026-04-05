@@ -18,10 +18,12 @@
 ### In Progress
 
 - **Phase 4**: Integration (ButtonHandler, geofence, BLE notifications, last_wake tracking)
-  - ButtonHandler exists but not integrated into state machine
-  - Geofence exists but not integrated
-  - BLE notifications not sent on geofence events
-  - `last_wake` tracked but not used for sleep duration decisions
+  - ✅ ButtonHandler integrated into state machine
+  - ✅ Button wake now uses shorter sleep duration (`BUTTON_WAKE_SLEEP_MS`)
+  - ✅ Button wakeup properly configured for deep sleep
+  - ✅ `last_wake` now assigned and used
+  - ⏳ Geofence integration (not started)
+  - ⏳ BLE notifications on geofence breach (not started)
 
 ---
 
@@ -52,28 +54,46 @@
 
 ## Phase 4: Integration Details
 
-### ButtonHandler Integration
+### ButtonHandler Integration ✅
 
-- **Status**: Exists but not integrated
-- **Files**: `button_handler.cpp`, `button_handler.hpp`
-- **Need**: Integrate into state machine to handle button press events
+- **Status**: Integrated
+- **Files**: `button_handler.cpp`, `button_handler.hpp`, `state_machine.cpp`
+- **Changes**:
+  - Added `ButtonHandler` member to `TrackerStateMachine`
+  - Added `check_button()` method
+  - Button now configured as deep sleep wakeup source
+
+### Button Wakeup Configuration ✅
+
+- **Status**: Fixed
+- **Files**: `state_machine.cpp:configure_wakeup_sources()`
+- **Changes**: Added `esp_sleep_enable_gpio_wakeup()` call
+- **Note**: Button uses `gpio_wakeup_enable()` with `GPIO_INTR_LOW_LEVEL`
 
 ### Geofence Integration
 
-- **Status**: Exists but not integrated
+- **Status**: Not started
 - **Files**: `geofence.cpp`, `geofence.hpp`
 - **Need**: Check location against geofences after GPS fix, trigger BLE notification if breach detected
 
 ### BLE Notifications
 
-- **Status**: Not implemented
+- **Status**: Not started
 - **Current**: BLE GATT server exists for fallback TX
 - **Need**: Send notification to connected device on geofence breach
 
-### last_wake Tracking
+### last_wake Tracking ✅
 
-- **Status**: Tracked in `TrackerContext.last_wake` but not used
-- **Need**: Use `last_wake` to adjust sleep duration (e.g., shorter sleep after button wake)
+- **Status**: Fixed
+- **Changes**: 
+  - `last_wake` now assigned from `get_wake_source()` result
+  - `get_sleep_duration()` uses `BUTTON_WAKE_SLEEP_MS` when last_wake was BUTTON
+
+### Battery Reading
+
+- **Status**: Not implemented
+- **Plan**: Add ADC reading for battery voltage (hardware dependent - requires PCB)
+- **Note**: Deferred until PCB design complete
 
 ---
 

@@ -33,6 +33,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Fixed geofence test expectation for small radius zones
 - Added missing mocks: `vEventGroupDelete()`, `gpio_install_isr_service()`
 - Phase 3: `TrackerStateMachine::init()` now propagates errors from `Config::init()` and `Config::load()`
+- Phase 4: ButtonHandler integrated into state machine
+- Phase 4: Button wake now uses shorter sleep duration
+- Phase 4: `last_wake` now assigned and used for sleep duration decisions
 
 ## [0.2.0] - 2025-04-05
 
