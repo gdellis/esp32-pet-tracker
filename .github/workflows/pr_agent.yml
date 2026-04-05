@@ -20,6 +20,8 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Validate secrets
         run: |
           if [ -z "${{ secrets.OLLAMA_API_KEY }}" ]; then
