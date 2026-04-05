@@ -2,6 +2,7 @@
 
 #include "accelerometer.hpp"
 #include "ble.hpp"
+#include "button_handler.hpp"
 #include "config.hpp"
 #include "gps.hpp"
 #include "led_driver.hpp"
@@ -16,6 +17,7 @@ constexpr uint32_t GPS_TIMEOUT_MS = 60000;
 constexpr uint8_t MAX_TX_RETRIES = 3;
 constexpr uint32_t TX_RETRY_BASE_DELAY_MS = 1000;
 constexpr uint32_t INACTIVITY_THRESHOLD_MS = 30000;
+constexpr uint32_t BUTTON_WAKE_SLEEP_MS = 5000;
 
 struct TrackerContext {
 	TrackerState state;
@@ -54,6 +56,7 @@ class TrackerStateMachine {
 	void sleep (uint32_t duration_ms);
 	void check_motion ();
 	void update_activity_time ();
+	bool check_button ();
 	esp_err_t transmit_location ();
 	esp_err_t try_lora_send (const GpsData& data, bool valid_fix);
 	esp_err_t try_ble_fallback (const GpsData& data, bool valid_fix);
@@ -66,5 +69,6 @@ class TrackerStateMachine {
 	Accelerometer& accel_;
 	BleServer& ble_;
 	LedDriver& led_;
+	ButtonHandler button_;
 	TrackerConfig config_;
 };

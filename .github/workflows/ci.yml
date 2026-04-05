@@ -36,7 +36,8 @@ jobs:
           if [[ "${{ github.event_name }}" == "push" ]]; then
             git diff --name-only HEAD~1 HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
           else
-            git diff --name-only ${{ github.base_ref }} HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
+            git fetch origin ${{ github.base_ref }} --depth=1
+            git diff --name-only origin/${{ github.base_ref }} HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
           fi
 
   # Lint C++ (non-blocking - clang-format style differs from ESP-IDF conventions)
