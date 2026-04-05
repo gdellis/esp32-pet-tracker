@@ -130,6 +130,30 @@ BleServer::update_location (const BleLocationData& location) {
 }
 
 esp_err_t
+BleServer::send_alert (const BleAlertData& alert) {
+	if (!connected_) {
+		return ESP_ERR_INVALID_STATE;
+	}
+
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+		return ESP_ERR_TIMEOUT;
+	}
+	current_alert_ = alert;
+	xSemaphoreGive (mutex_);
+
+	uint8_t alert_data[sizeof (BleAlertData)];
+	memcpy (alert_data, &alert, sizeof (alert_data));
+
+	esp_err_t ret
+		= esp_ble_gatts_send_indicate (service_handle_, connection_id_, alert_char_handle_,
+									   sizeof (alert_data), alert_data, false);
+	if (ret != ESP_OK) {
+		ESP_LOGE (TAG, "Failed to send alert indication: %s", esp_err_to_name (ret));
+	}
+	return ret;
+}
+
+esp_err_t
 BleServer::set_device_name (const char* name) {
 	if (name == nullptr) {
 		return ESP_ERR_INVALID_ARG;
@@ -207,6 +231,16 @@ BleServer::add_characteristics () {
 	ret = esp_ble_gatts_add_char (
 		service_handle_, &name_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
 		ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE, &attr_val, &attr_ctrl);
+	(void)ret;
+
+	esp_bt_uuid_t alert_uuid = {
+		.len = ESP_UUID_LEN_16,
+		.uuid = { .uuid16 = BLE_CHAR_ALERT_UUID },
+	};
+
+	ret = esp_ble_gatts_add_char (service_handle_, &alert_uuid, ESP_GATT_PERM_READ,
+								  ESP_GATT_CHAR_PROP_BIT_NOTIFY | ESP_GATT_CHAR_PROP_BIT_READ,
+								  &attr_val, &attr_ctrl);
 	(void)ret;
 }
 
@@ -366,6 +400,9 @@ BleServer::on_gatts_event (esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
 		} else if (param->add_char.char_uuid.uuid.uuid16 == BLE_CHAR_NAME_UUID) {
 			name_char_handle_ = param->add_char.attr_handle;
 			ESP_LOGI (TAG, "Name characteristic added with handle %d", name_char_handle_);
+		} else if (param->add_char.char_uuid.uuid.uuid16 == BLE_CHAR_ALERT_UUID) {
+			alert_char_handle_ = param->add_char.attr_handle;
+			ESP_LOGI (TAG, "Alert characteristic added with handle %d", alert_char_handle_);
 		}
 		break;
 

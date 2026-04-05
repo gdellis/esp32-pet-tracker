@@ -3,6 +3,15 @@
 
 static const char* TAG = "config";
 
+static void
+set_default_zones (TrackerConfig& config) {
+	config.zone_count = 1;
+	zone_set_name (config.zones[0], "Home");
+	config.zones[0].center.latitude = 0;
+	config.zones[0].center.longitude = 0;
+	config.zones[0].radius_m = 100;
+}
+
 esp_err_t
 Config::init () {
 	esp_err_t ret = nvs_flash_init ();
@@ -71,6 +80,41 @@ Config::load (TrackerConfig& config) {
 		strlcpy (config.device_name, DEFAULT_DEVICE_NAME, sizeof (config.device_name));
 	}
 
+	ret = get_u8 (handle, "zone_count", config.zone_count);
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
+		config.zone_count = 0;
+	}
+
+	for (uint8_t i = 0; i < config.zone_count && i < MAX_GEOFENCE_ZONES; i++) {
+		char key[16];
+		snprintf (key, sizeof (key), "zone%d_lat", i);
+		ret = get_u32 (handle, key, (uint32_t&)config.zones[i].center.latitude);
+		if (ret == ESP_OK) {
+			any_read_ok = true;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_lon", i);
+		ret = get_u32 (handle, key, (uint32_t&)config.zones[i].center.longitude);
+		if (ret == ESP_OK) {
+			any_read_ok = true;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_rad", i);
+		ret = get_u32 (handle, key, config.zones[i].radius_m);
+		if (ret == ESP_OK) {
+			any_read_ok = true;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_name", i);
+		get_str (handle, key, config.zones[i].name, sizeof (config.zones[i].name));
+	}
+
+	if (config.zone_count == 0) {
+		set_default_zones (config);
+	}
+
 	nvs_close (handle);
 	if (any_read_ok) {
 		ESP_LOGI (
@@ -124,6 +168,38 @@ Config::save (const TrackerConfig& config) {
 	ret = set_str (handle, "device_name", config.device_name);
 	if (ret != ESP_OK) {
 		goto cleanup;
+	}
+
+	ret = set_u8 (handle, "zone_count", config.zone_count);
+	if (ret != ESP_OK) {
+		goto cleanup;
+	}
+
+	for (uint8_t i = 0; i < config.zone_count && i < MAX_GEOFENCE_ZONES; i++) {
+		char key[16];
+		snprintf (key, sizeof (key), "zone%d_lat", i);
+		ret = set_u32 (handle, key, (uint32_t)config.zones[i].center.latitude);
+		if (ret != ESP_OK) {
+			goto cleanup;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_lon", i);
+		ret = set_u32 (handle, key, (uint32_t)config.zones[i].center.longitude);
+		if (ret != ESP_OK) {
+			goto cleanup;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_rad", i);
+		ret = set_u32 (handle, key, config.zones[i].radius_m);
+		if (ret != ESP_OK) {
+			goto cleanup;
+		}
+
+		snprintf (key, sizeof (key), "zone%d_name", i);
+		ret = set_str (handle, key, config.zones[i].name);
+		if (ret != ESP_OK) {
+			goto cleanup;
+		}
 	}
 
 	ret = nvs_commit (handle);

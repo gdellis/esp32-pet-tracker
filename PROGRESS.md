@@ -22,8 +22,8 @@
   - ✅ Button wake now uses shorter sleep duration (`BUTTON_WAKE_SLEEP_MS`)
   - ✅ Button wakeup properly configured for deep sleep
   - ✅ `last_wake` now assigned and used
-  - ⏳ Geofence integration (not started)
-  - ⏳ BLE notifications on geofence breach (not started)
+  - ✅ Geofence integration - location checked against zones after GPS fix
+  - ✅ BLE alert sent on geofence breach
 
 ---
 
@@ -70,17 +70,26 @@
 - **Changes**: Added `esp_sleep_enable_gpio_wakeup()` call
 - **Note**: Button uses `gpio_wakeup_enable()` with `GPIO_INTR_LOW_LEVEL`
 
-### Geofence Integration
+### Geofence Integration ✅
 
-- **Status**: Not started
-- **Files**: `geofence.cpp`, `geofence.hpp`
-- **Need**: Check location against geofences after GPS fix, trigger BLE notification if breach detected
+- **Status**: Complete
+- **Files**: `geofence.cpp`, `geofence.hpp`, `config.hpp`, `state_machine.cpp`
+- **Changes**:
+  - Added zone storage to `TrackerConfig` (up to 4 zones)
+  - Zones persisted to/from NVS via config save/load
+  - `check_geofence()` called after GPS fix
+  - Breach triggers BLE alert and sets `is_moving = true`
+  - Default "Home" zone created if no zones configured
 
-### BLE Notifications
+### BLE Notifications ✅
 
-- **Status**: Not started
-- **Current**: BLE GATT server exists for fallback TX
-- **Need**: Send notification to connected device on geofence breach
+- **Status**: Complete
+- **Files**: `ble.hpp`, `ble.cpp`, `state_machine.cpp`
+- **Changes**:
+  - Added `BleAlertData` struct with alert type, zone index, location, timestamp
+  - Added `BLE_CHAR_ALERT_UUID` (0x2A06) for alert characteristic
+  - Added `send_alert()` method using `esp_ble_gatts_send_indicate()`
+  - Alert sent on geofence breach to connected device
 
 ### last_wake Tracking ✅
 

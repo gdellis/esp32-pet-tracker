@@ -4,6 +4,7 @@
 #include "ble.hpp"
 #include "button_handler.hpp"
 #include "config.hpp"
+#include "geofence.hpp"
 #include "gps.hpp"
 #include "led_driver.hpp"
 #include "lora/sx1262.hpp"
@@ -55,6 +56,7 @@ class TrackerStateMachine {
 	WakeSource get_wake_source ();
 	void sleep (uint32_t duration_ms);
 	void check_motion ();
+	void check_geofence ();
 	void update_activity_time ();
 	bool check_button ();
 	esp_err_t transmit_location ();
@@ -71,4 +73,5 @@ class TrackerStateMachine {
 	LedDriver& led_;
 	ButtonHandler button_;
 	TrackerConfig config_;
+	bool geofence_breach_ = false;
 };

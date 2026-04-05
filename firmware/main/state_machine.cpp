@@ -58,6 +58,7 @@ TrackerStateMachine::run () {
 					if (gps_.has_fix ()) {
 						ctx_.gps_fix_obtained = true;
 						ESP_LOGI (TAG, "GPS fix obtained");
+						check_geofence ();
 						break;
 					}
 				}
@@ -123,6 +124,7 @@ TrackerStateMachine::run () {
 			ctx_.wake_count++;
 			ctx_.gps_fix_obtained = false;
 			ctx_.tx_retry_count = 0;
+			geofence_breach_ = false;
 			update_activity_time ();
 
 			lora_.wake ();
@@ -191,6 +193,35 @@ TrackerStateMachine::check_motion () {
 		int64_t now = esp_timer_get_time () / 1000;
 		if (now - ctx_.last_activity_time > INACTIVITY_THRESHOLD_MS) {
 			ctx_.is_moving = false;
+		}
+	}
+}
+
+void
+TrackerStateMachine::check_geofence () {
+	if (!ctx_.gps_fix_obtained) {
+		return;
+	}
+
+	const auto& data = gps_.get_data ();
+	GeoPoint point
+		= { (int32_t)(data.latitude * COORD_SCALE), (int32_t)(data.longitude * COORD_SCALE) };
+
+	for (uint8_t i = 0; i < config_.zone_count && i < MAX_GEOFENCE_ZONES; i++) {
+		if (!point_in_circle (point, config_.zones[i])) {
+			ESP_LOGW (TAG, "Geofence breach: %s", config_.zones[i].name);
+			ctx_.is_moving = true;
+			geofence_breach_ = true;
+
+			BleAlertData alert = {};
+			alert.alert_type = 1;
+			alert.zone_index = i;
+			alert.latitude = (int32_t)(data.latitude * COORD_SCALE);
+			alert.longitude = (int32_t)(data.longitude * COORD_SCALE);
+			alert.altitude = (int32_t)(data.altitude * 100);
+			alert.timestamp = (uint32_t)(esp_timer_get_time () / 1000000);
+			ble_.send_alert (alert);
+			break;
 		}
 	}
 }

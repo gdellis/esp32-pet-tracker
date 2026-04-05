@@ -21,6 +21,7 @@ repos:
   rev: v0.21.0
   hooks:
   - id: markdownlint-cli2
+    exclude: '^\.opencode/'
     args: [ '--config', '.markdownlint.json' ]
 
 # Shell linting
@@ -36,3 +37,4 @@ repos:
   - id: clang-format
     types_or: [c++, c]
     args: ['-style=file']
+    files: ^firmware/

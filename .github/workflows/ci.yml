@@ -40,7 +40,33 @@ jobs:
             git diff --name-only origin/${{ github.base_ref }} HEAD | grep -qE '^firmware/' && echo "firmware_changed=true" >> $GITHUB_OUTPUT || echo "firmware_changed=false" >> $GITHUB_OUTPUT
           fi
 
-  # Lint C++ (non-blocking - clang-format style differs from ESP-IDF conventions)
+  # Lint Markdown and Shell via pre-commit (clang-format excluded - handled separately)
+  lint-precommit:
+    name: Lint (pre-commit)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache pre-commit
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
+
+      - name: Install pre-commit
+        run: pip install pre-commit
+
+      - name: Run pre-commit (markdown + shell only)
+        run: |
+          pre-commit run markdownlint-cli2
+          pre-commit run shellcheck
+
+  # Lint C++ with clang-format dry-run
   lint-cpp:
     name: Lint C++
     runs-on: ubuntu-latest
@@ -62,61 +88,11 @@ jobs:
         run: |
           pip install --break-system-packages clang-format
 
-      - name: Run clang-format
+      - name: Run clang-format dry-run
         run: |
           find firmware/main -type f \( -name '*.cpp' -o -name '*.hpp' -o -name '*.h' \) \
             -print0 | xargs -0 clang-format --dry-run --Werror 2>&1 \
             || echo "clang-format warnings (ESP-IDF uses GNU style)"
-
-  # Lint Shell
-  lint-shell:
-    name: Lint Shell
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install shellcheck
-        run: |
-          sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: Run shellcheck
-        run: |
-          find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck
-
-  # Lint Markdown
-  lint-markdown:
-    name: Lint Markdown
-    runs-on: ubuntu-latest
-    continue-on-error: true
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-markdownlint-${{ hashFiles('.github/workflows/ci.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-
-      - name: Install markdownlint-cli2
-        run: |
-          npm install -g markdownlint-cli2
-
-      - name: Run markdownlint-cli2
-        run: |
-          markdownlint-cli2 '**/*.md' --config '.markdownlint.json' \
-            '!firmware/tests/build/**' \
-            '!firmware/build/**' \
-            '!third_party/**' \
-            '!docs/datasheets/**' \
-            '!docs/plans/**' \
-            '!.opencode/**'
 
   # Build ESP-IDF firmware (runs in Docker)
   build-firmware:

@@ -12,6 +12,7 @@
 constexpr uint16_t BLE_SERVICE_UUID = 0x1810;
 constexpr uint16_t BLE_CHAR_LOCATION_UUID = 0x2A67;
 constexpr uint16_t BLE_CHAR_NAME_UUID = 0x2A99;
+constexpr uint16_t BLE_CHAR_ALERT_UUID = 0x2A06;
 
 constexpr uint16_t BLE_DEVICE_NAME_MAX = 32;
 
@@ -26,6 +27,15 @@ struct BleLocationData {
 	uint8_t valid;
 };
 
+struct BleAlertData {
+	uint8_t alert_type;
+	uint8_t zone_index;
+	int32_t latitude;
+	int32_t longitude;
+	int32_t altitude;
+	uint32_t timestamp;
+};
+
 class BleServer {
   public:
 	BleServer ();
@@ -35,6 +45,7 @@ class BleServer {
 	esp_err_t start ();
 	esp_err_t stop ();
 	esp_err_t update_location (const BleLocationData& location);
+	esp_err_t send_alert (const BleAlertData& alert);
 	esp_err_t set_device_name (const char* name);
 
 	bool is_connected () const;
@@ -60,6 +71,7 @@ class BleServer {
 	uint16_t service_handle_ = 0;
 	uint16_t location_char_handle_ = 0;
 	uint16_t name_char_handle_ = 0;
+	uint16_t alert_char_handle_ = 0;
 	uint16_t connection_id_ = 0;
 	bool connected_ = false;
 	bool started_ = false;
@@ -67,6 +79,7 @@ class BleServer {
 
 	char device_name_[BLE_DEVICE_NAME_MAX] = "PetTracker";
 	BleLocationData current_location_ = {};
+	BleAlertData current_alert_ = {};
 
 	static BleServer* instance_;
 };

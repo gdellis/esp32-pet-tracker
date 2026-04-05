@@ -1,10 +1,13 @@
 #pragma once
 
 #include "esp_err.h"
+#include "geofence.hpp"
 #include "nvs.h"
 #include "nvs_flash.h"
 #include <stdint.h>
 #include <string.h>
+
+constexpr size_t MAX_GEOFENCE_ZONES = 4;
 
 struct TrackerConfig {
 	uint32_t device_id;
@@ -13,6 +16,8 @@ struct TrackerConfig {
 	uint8_t tx_power;
 	uint8_t spreading_factor;
 	char device_name[32];
+	CircleZone zones[MAX_GEOFENCE_ZONES];
+	uint8_t zone_count;
 };
 
 class Config {

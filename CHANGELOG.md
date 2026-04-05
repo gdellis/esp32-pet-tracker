@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `.agents/guides/ide-setup.md` - Comprehensive IDE setup guide
 - Pre-commit hooks for clang-format and markdownlint
 - `PROGRESS.md` - Consolidated implementation status tracking
+- Geofence zones storage in config (up to 4 zones)
+- BLE alert characteristic for geofence breach notifications
+- State machine diagram in `docs/firmware/STATE_MACHINE.md`
 
 ### Changed
 
@@ -36,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Phase 4: ButtonHandler integrated into state machine
 - Phase 4: Button wake now uses shorter sleep duration
 - Phase 4: `last_wake` now assigned and used for sleep duration decisions
+- Phase 4: Geofence integration - location checked against zones after GPS fix
+- Phase 4: BLE alert sent on geofence breach
 
 ## [0.2.0] - 2025-04-05
 
