@@ -33,13 +33,15 @@ extern "C" void
 app_main (void) {
 	ESP_LOGI (TAG, "Starting pet tracker...");
 
-	LedDriver led (BOARD_LED_PIN);
+	static LedDriver led (BOARD_LED_PIN);
 
 	static Gps gps (UART_NUM_1);
+	gps.init ();
 
 	static LoRaDriver lora (spi_host_device_t::SPI2_HOST, BOARD_LORA_MOSI_PIN, BOARD_LORA_MISO_PIN,
 							BOARD_LORA_SCK_PIN, BOARD_LORA_NSS_PIN, BOARD_LORA_RESET_PIN,
 							BOARD_LORA_BUSY_PIN, BOARD_LORA_DIO1_PIN);
+	lora.init ();
 
 	static Accelerometer accel (I2C_NUM_0, BOARD_ACCEL_INT_PIN);
 	accel.init ();
@@ -49,7 +51,7 @@ app_main (void) {
 	ble.init ();
 	ble.start ();
 
-	static TrackerStateMachine state_machine (gps, lora, accel, ble);
+	static TrackerStateMachine state_machine (gps, lora, accel, ble, led);
 	state_machine.init ();
 
 	ESP_LOGI (TAG, "Pet tracker initialized, entering main loop");

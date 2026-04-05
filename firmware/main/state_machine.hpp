@@ -4,6 +4,7 @@
 #include "ble.hpp"
 #include "config.hpp"
 #include "gps.hpp"
+#include "led_driver.hpp"
 #include "lora/sx1262.hpp"
 #include <stdint.h>
 
@@ -27,7 +28,8 @@ struct TrackerContext {
 
 class TrackerStateMachine {
   public:
-	TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel, BleServer& ble);
+	TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel, BleServer& ble,
+						 LedDriver& led);
 
 	void init ();
 	void run ();
@@ -55,11 +57,13 @@ class TrackerStateMachine {
 	esp_err_t try_lora_send (const GpsData& data, bool valid_fix);
 	esp_err_t try_ble_fallback (const GpsData& data, bool valid_fix);
 	uint32_t get_sleep_duration () const;
+	void configure_wakeup_sources ();
 
 	TrackerContext ctx_;
 	Gps& gps_;
 	LoRaDriver& lora_;
 	Accelerometer& accel_;
 	BleServer& ble_;
+	LedDriver& led_;
 	TrackerConfig config_;
 };

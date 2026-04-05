@@ -1,4 +1,5 @@
 #include "state_machine.hpp"
+#include "board_config.h"
 #include "deep_sleep.hpp"
 #include "driver/gpio.h"
 #include "esp_log.h"
@@ -10,9 +11,9 @@
 static const char* TAG = "tracker";
 
 TrackerStateMachine::TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel,
-										  BleServer& ble)
+										  BleServer& ble, LedDriver& led)
 	: ctx_ ({ TrackerState::INIT, WakeSource::NONE, 0, false, false, 0, 0 }), gps_ (gps),
-	  lora_ (lora), accel_ (accel), ble_ (ble) {}
+	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led) {}
 
 void
 TrackerStateMachine::init () {
@@ -91,6 +92,7 @@ TrackerStateMachine::run () {
 					  ctx_.is_moving ? "yes" : "no");
 
 			check_motion ();
+			configure_wakeup_sources ();
 
 			lora_.sleep ();
 			sleep (sleep_ms);
@@ -148,7 +150,10 @@ TrackerStateMachine::get_wake_source () {
 	uint64_t causes = esp_sleep_get_wakeup_causes ();
 	if (causes & ESP_SLEEP_WAKEUP_TIMER) {
 		return WakeSource::TIMER;
-	} else if (causes & (ESP_SLEEP_WAKEUP_EXT1 | ESP_SLEEP_WAKEUP_GPIO)) {
+	} else if (causes & ESP_SLEEP_WAKEUP_GPIO) {
+		if (gpio_get_level (BOARD_ACCEL_INT_PIN) == 1) {
+			return WakeSource::MOTION;
+		}
 		return WakeSource::BUTTON;
 	}
 #else
@@ -171,6 +176,13 @@ void
 TrackerStateMachine::sleep (uint32_t duration_ms) {
 	DeepSleep::enable_timer_wakeup (duration_ms * 1000ULL);
 	DeepSleep::sleep ();
+}
+
+void
+TrackerStateMachine::configure_wakeup_sources () {
+	gpio_wakeup_enable (BOARD_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
+	accel_.enable_wakeup (BOARD_ACCEL_INT_PIN);
+	esp_sleep_enable_gpio_wakeup ();
 }
 
 void
