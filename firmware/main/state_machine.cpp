@@ -146,7 +146,6 @@ TrackerStateMachine::transition_to (TrackerState new_state) {
 
 WakeSource
 TrackerStateMachine::get_wake_source () {
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 0, 0)
 	uint64_t causes = esp_sleep_get_wakeup_causes ();
 	if (causes & ESP_SLEEP_WAKEUP_TIMER) {
 		return WakeSource::TIMER;
@@ -156,19 +155,6 @@ TrackerStateMachine::get_wake_source () {
 		}
 		return WakeSource::BUTTON;
 	}
-#else
-	esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause ();
-	switch (cause) {
-	case ESP_SLEEP_WAKEUP_TIMER:
-		return WakeSource::TIMER;
-	case ESP_SLEEP_WAKEUP_EXT1:
-		return WakeSource::BUTTON;
-	case ESP_SLEEP_WAKEUP_GPIO:
-		return WakeSource::MOTION;
-	default:
-		return WakeSource::NONE;
-	}
-#endif
 	return WakeSource::NONE;
 }
 
@@ -193,7 +179,7 @@ TrackerStateMachine::check_motion () {
 		ESP_LOGD (TAG, "Motion detected");
 	} else {
 		int64_t now = esp_timer_get_time () / 1000;
-		if (now - ctx_.last_activity_time > 30000) {
+		if (now - ctx_.last_activity_time > INACTIVITY_THRESHOLD_MS) {
 			ctx_.is_moving = false;
 		}
 	}

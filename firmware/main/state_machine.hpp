@@ -15,6 +15,7 @@ enum class WakeSource { NONE, TIMER, BUTTON, MOTION };
 constexpr uint32_t GPS_TIMEOUT_MS = 60000;
 constexpr uint8_t MAX_TX_RETRIES = 3;
 constexpr uint32_t TX_RETRY_BASE_DELAY_MS = 1000;
+constexpr uint32_t INACTIVITY_THRESHOLD_MS = 30000;
 
 struct TrackerContext {
 	TrackerState state;

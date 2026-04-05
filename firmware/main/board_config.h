@@ -17,7 +17,7 @@
 
 /** @brief Status LED GPIO */
 #define BOARD_LED_PIN GPIO_NUM_40
-/** @brief Push button GPIO */
+/** @brief Push button GPIO (active-low, pulled high internally) */
 #define BOARD_BUTTON_PIN GPIO_NUM_9
 /** @brief GPS UART TX GPIO */
 #define BOARD_GPS_TX_PIN GPIO_NUM_7
@@ -49,7 +49,7 @@
 
 /** @brief Status LED GPIO */
 #define BOARD_LED_PIN		 GPIO_NUM_8
-/** @brief Push button GPIO */
+/** @brief Push button GPIO (active-low, pulled high internally) */
 #define BOARD_BUTTON_PIN	 GPIO_NUM_9
 /** @brief GPS UART TX GPIO */
 #define BOARD_GPS_TX_PIN	 GPIO_NUM_4
