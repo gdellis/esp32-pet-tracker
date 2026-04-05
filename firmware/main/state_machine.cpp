@@ -168,7 +168,6 @@ void
 TrackerStateMachine::configure_wakeup_sources () {
 	gpio_wakeup_enable (BOARD_BUTTON_PIN, GPIO_INTR_LOW_LEVEL);
 	accel_.enable_wakeup (BOARD_ACCEL_INT_PIN);
-	esp_sleep_enable_gpio_wakeup ();
 }
 
 void
