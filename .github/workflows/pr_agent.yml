@@ -47,3 +47,9 @@ jobs:
             - The review comments should highlight specific lines of code in the pull request.
             - Add categories to each comment like [BUG], [IMPROVEMENT], [BEST PRACTICE], [SECURITY] and severity levels like [LOW], [MEDIUM], [HIGH]. Try to avoid unnecessary nitpicks unless they are important and hint towards a larger issue.
             - If there are no issues, say "No issues found. Good job!"
+
+      - name: Add reviewer
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} --add-reviewer gdellis
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
