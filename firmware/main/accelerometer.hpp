@@ -3,6 +3,7 @@
 #include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "esp_err.h"
+#include "esp_sleep.h"
 #include <stdint.h>
 
 #define LIS3DH_I2C_ADDR 0x19
@@ -54,6 +55,9 @@ class Accelerometer {
 	esp_err_t clear_interrupt ();
 	bool has_motion ();
 	esp_err_t read_axis (int16_t& x, int16_t& y, int16_t& z);
+
+	esp_err_t enable_wakeup (gpio_num_t gpio_num);
+	bool is_wakeup_source ();
 
   private:
 	esp_err_t write_reg (uint8_t reg, uint8_t value);

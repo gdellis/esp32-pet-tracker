@@ -102,6 +102,12 @@ class LoRaDriver {
 	esp_err_t sleep ();
 
 	/**
+	 * @brief Wake from sleep mode (returns to standby)
+	 * @return ESP_OK on success
+	 */
+	esp_err_t wake ();
+
+	/**
 	 * @brief Enter standby mode (ready for TX/RX)
 	 * @return ESP_OK on success
 	 */

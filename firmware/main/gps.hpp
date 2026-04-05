@@ -56,6 +56,16 @@ class Gps {
 	bool init ();
 
 	/**
+	 * @brief Power on the GPS module
+	 */
+	void power_on ();
+
+	/**
+	 * @brief Power off the GPS module (puts it in backup mode)
+	 */
+	void power_off ();
+
+	/**
 	 * @brief Update GPS data by reading from UART
 	 * @return true if new data was parsed, false otherwise
 	 */

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "accelerometer.hpp"
+#include "ble.hpp"
+#include "config.hpp"
 #include "gps.hpp"
 #include "lora/sx1262.hpp"
 #include <stdint.h>
@@ -9,9 +11,9 @@ enum class TrackerState { INIT, IDLE, ACQUIRING_GPS, TRANSMITTING, DEEP_SLEEP, E
 
 enum class WakeSource { NONE, TIMER, BUTTON, MOTION };
 
-constexpr uint32_t DEFAULT_SLEEP_INTERVAL_MS = 300000;
-constexpr uint32_t STATIONARY_SLEEP_INTERVAL_MS = 600000;
 constexpr uint32_t GPS_TIMEOUT_MS = 60000;
+constexpr uint8_t MAX_TX_RETRIES = 3;
+constexpr uint32_t TX_RETRY_BASE_DELAY_MS = 1000;
 
 struct TrackerContext {
 	TrackerState state;
@@ -20,11 +22,12 @@ struct TrackerContext {
 	bool gps_fix_obtained;
 	bool is_moving;
 	int64_t last_activity_time;
+	uint8_t tx_retry_count;
 };
 
 class TrackerStateMachine {
   public:
-	TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel);
+	TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel, BleServer& ble);
 
 	void init ();
 	void run ();
@@ -48,9 +51,15 @@ class TrackerStateMachine {
 	void sleep (uint32_t duration_ms);
 	void check_motion ();
 	void update_activity_time ();
+	esp_err_t transmit_location ();
+	esp_err_t try_lora_send (const GpsData& data, bool valid_fix);
+	esp_err_t try_ble_fallback (const GpsData& data, bool valid_fix);
+	uint32_t get_sleep_duration () const;
 
 	TrackerContext ctx_;
 	Gps& gps_;
 	LoRaDriver& lora_;
 	Accelerometer& accel_;
+	BleServer& ble_;
+	TrackerConfig config_;
 };

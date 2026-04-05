@@ -29,35 +29,27 @@
 
 static const char* TAG = "pet-tracker";
 
-#define SLEEP_TIMEOUT_MS	   30000
-#define DEEP_SLEEP_DURATION_US (10LL * 1000000)
-
-void
+extern "C" void
 app_main (void) {
 	ESP_LOGI (TAG, "Starting pet tracker...");
 
-	// Initialize hardware components
-	gpio_driver::init ();
-	led_driver::init ();
-	button_handler::init ();
+	LedDriver led (BOARD_LED_PIN);
 
-	// Initialize GPS (UART1: TX=GPIO7, RX=GPIO15 @ 115200 baud)
-	gps::init (UART_NUM_1);
+	static Gps gps (UART_NUM_1);
 
-	// Initialize LoRa (SPI2: MOSI=GPIO4, MISO=GPIO5, SCLK=GPIO6, CS=GPIO10)
-	lora_driver::init ();
+	static LoRaDriver lora (spi_host_device_t::SPI2_HOST, BOARD_LORA_MOSI_PIN, BOARD_LORA_MISO_PIN,
+							BOARD_LORA_SCK_PIN, BOARD_LORA_NSS_PIN, BOARD_LORA_RESET_PIN,
+							BOARD_LORA_BUSY_PIN, BOARD_LORA_DIO1_PIN);
 
-	// Initialize accelerometer (I2C0: SDA=GPIO2, SCL=GPIO3, INT=GPIO9)
-	accelerometer::init (I2C_NUM_0, BOARD_ACCEL_INT_PIN);
-	accelerometer::enable_motion_interrupt (2000); // 200mg threshold
-
-	// Create and initialize state machine
-	static Gps gps;
-	static LoRaDriver lora (spi_host_device_t::SPI2_HOST, GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_6,
-							GPIO_NUM_10, GPIO_NUM_0, GPIO_NUM_0, GPIO_NUM_9);
 	static Accelerometer accel (I2C_NUM_0, BOARD_ACCEL_INT_PIN);
+	accel.init ();
+	accel.enable_motion_interrupt (2000);
 
-	static TrackerStateMachine state_machine (gps, lora, accel);
+	static BleServer ble;
+	ble.init ();
+	ble.start ();
+
+	static TrackerStateMachine state_machine (gps, lora, accel, ble);
 	state_machine.init ();
 
 	ESP_LOGI (TAG, "Pet tracker initialized, entering main loop");

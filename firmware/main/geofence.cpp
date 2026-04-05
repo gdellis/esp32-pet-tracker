@@ -56,3 +56,41 @@ point_in_circle (const GeoPoint& point, const CircleZone& zone) {
 										   zone.center.longitude);
 	return distance <= zone.radius_m;
 }
+
+bool
+polygon_add_vertex (PolygonZone& zone, int32_t lat, int32_t lon) {
+	if (zone.vertex_count >= 16) {
+		return false;
+	}
+	zone.vertices[zone.vertex_count].latitude = lat;
+	zone.vertices[zone.vertex_count].longitude = lon;
+	zone.vertex_count++;
+	return true;
+}
+
+bool
+point_in_polygon (const GeoPoint& point, const PolygonZone& zone) {
+	if (!coordinates_valid (point.latitude, point.longitude)) {
+		return false;
+	}
+	if (zone.vertex_count < 3) {
+		return false;
+	}
+
+	bool inside = false;
+	double x = static_cast<double> (point.longitude) / COORD_SCALE;
+	double y = static_cast<double> (point.latitude) / COORD_SCALE;
+
+	for (uint8_t i = 0, j = zone.vertex_count - 1; i < zone.vertex_count; j = i++) {
+		double xi = static_cast<double> (zone.vertices[i].longitude) / COORD_SCALE;
+		double yi = static_cast<double> (zone.vertices[i].latitude) / COORD_SCALE;
+		double xj = static_cast<double> (zone.vertices[j].longitude) / COORD_SCALE;
+		double yj = static_cast<double> (zone.vertices[j].latitude) / COORD_SCALE;
+
+		if (((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+			inside = !inside;
+		}
+	}
+
+	return inside;
+}

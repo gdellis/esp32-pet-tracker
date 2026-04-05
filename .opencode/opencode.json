@@ -7,9 +7,12 @@
       "npm *": "allow",
       "rm *": "ask",
       "grep *": "allow",
-      "gh *": "allow"
+      "gh *": "allow",
+      "idf.py *": "allow",
+      ". ~/.espressif/*/esp-idf/export.sh && *": "allow",
+      "~/.espressif/*/esp-idf/*": "allow"
     },
-    "read":"allow",
+    "read": "allow",
     "write": "allow",
     "edit": "allow"
   },

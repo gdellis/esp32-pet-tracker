@@ -1,6 +1,68 @@
 # Build Guide
 
-## Docker Build (Recommended)
+## ESP-IDF Installation
+
+### Host Installation (Recommended for Development)
+
+1. **Install ESP-IDF v6.0**:
+
+**Option A: Using the offline installer** (installed to `~/.espressif/`):
+
+```bash
+# The installer typically places ESP-IDF at ~/.espressif/v6.0/esp-idf
+```
+
+**Option B: Manual git clone** (to `~/esp-idf`):
+
+```bash
+mkdir -p ~/esp-idf
+cd ~/esp-idf
+git clone --depth 1 --branch v6.0 --recursive https://github.com/espressif/esp-idf.git
+cd esp-idf
+./install.sh
+```
+
+2. **Activate ESP-IDF environment** (run once per terminal session):
+
+```bash
+. ~/.espressif/v6.0/esp-idf/export.sh
+# OR if using manual install:
+. ~/esp-idf/export.sh
+```
+
+Or add to your shell profile for convenience:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+alias ef='. ~/.espressif/v6.0/esp-idf/export.sh'
+```
+
+3. **Verify installation**:
+
+```bash
+idf.py --version  # Should show v6.0.x
+```
+
+### Docker Installation (Alternative)
+
+```bash
+docker pull espressif/idf:v6.0
+```
+
+---
+
+## Building
+
+### Host Build (Recommended)
+
+```bash
+cd firmware
+idf.py set-target esp32s3    # Set target once (or esp32c6)
+idf.py build                  # Build
+idf.py -p /dev/ttyACM0 flash monitor  # Flash and monitor
+```
+
+### Docker Build
 
 ```bash
 cd firmware
@@ -11,18 +73,17 @@ cd firmware
 
 ## Flash to Device
 
+### Host Flash
+
+```bash
+idf.py -p /dev/ttyACM0 flash monitor
+```
+
+### Docker Flash
+
 ```bash
 docker run --rm -v $(pwd):/workspace -w /workspace espressif/idf:v6.0 \
   sh -c ". /opt/esp/idf/export.sh && idf.py -D IDF_TARGET=esp32s3 -p /dev/ttyACM0 flash monitor"
-```
-
-## Manual Build
-
-```bash
-cd firmware
-idf.py set-target esp32s3    # Set target once
-idf.py build                  # Build
-idf.py -p /dev/ttyACM0 flash monitor  # Flash and monitor
 ```
 
 ## CI Build Notes

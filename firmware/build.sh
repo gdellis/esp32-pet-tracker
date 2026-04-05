@@ -73,6 +73,18 @@ if [[ "$MONITOR" == true ]]; then
 	IDF_CMD="${IDF_CMD} monitor"
 fi
 
+if [ -d "${PROJECT_DIR}/build" ]; then
+	BUILD_OWNER=$(stat -c '%u' "${PROJECT_DIR}/build" 2>/dev/null || echo "0")
+	CURRENT_USER=$(id -u)
+	if [ "${BUILD_OWNER}" != "${CURRENT_USER}" ]; then
+		echo "Build directory owned by user ${BUILD_OWNER}, removing to avoid permission issues..."
+		rm -rf "${PROJECT_DIR}/build" 2>/dev/null || {
+			echo "Warning: Could not remove build directory. You may need to:"
+			echo "  sudo rm -rf ${PROJECT_DIR}/build"
+		}
+	fi
+fi
+
 docker run --rm \
 	-v "${PROJECT_DIR}:/workspace" \
 	-w /workspace \

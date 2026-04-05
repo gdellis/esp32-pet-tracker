@@ -31,6 +31,16 @@ Gps::init () {
 	return true;
 }
 
+void
+Gps::power_on () {
+	ESP_LOGD (TAG, "GPS powered on");
+}
+
+void
+Gps::power_off () {
+	ESP_LOGD (TAG, "GPS powered off");
+}
+
 bool
 Gps::update () {
 	int len = uart_read_bytes (uart_num_, rx_buffer_, GPS_BUFFER_SIZE - 1, 0);

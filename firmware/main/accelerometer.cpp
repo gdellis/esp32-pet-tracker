@@ -1,6 +1,8 @@
 #include "accelerometer.hpp"
+#include "board_config.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "esp_sleep.h"
 
 static const char* TAG = "lis3dh";
 
@@ -20,7 +22,8 @@ Accelerometer::init (i2c_port_t i2c_port, gpio_num_t int_pin) {
 						  .scl_io_num = BOARD_ACCEL_SCL_PIN,
 						  .sda_pullup_en = GPIO_PULLUP_ENABLE,
 						  .scl_pullup_en = GPIO_PULLUP_ENABLE,
-						  .clk_cfg = I2C_CLK_FREQ_100K };
+						  .master = { .clk_speed = 100000 },
+						  .clk_flags = 0 };
 
 	esp_err_t ret = i2c_param_config (i2c_port, &conf);
 	if (ret != ESP_OK) {
@@ -165,6 +168,32 @@ Accelerometer::read_axis (int16_t& x, int16_t& y, int16_t& z) {
 	}
 
 	return ESP_OK;
+}
+
+esp_err_t
+Accelerometer::enable_wakeup (gpio_num_t gpio_num) {
+	gpio_config_t io_conf = { .pin_bit_mask = 1ULL << gpio_num,
+							  .mode = GPIO_MODE_INPUT,
+							  .pull_up_en = GPIO_PULLUP_DISABLE,
+							  .pull_down_en = GPIO_PULLDOWN_DISABLE,
+							  .intr_type = GPIO_INTR_DISABLE };
+
+	esp_err_t ret = gpio_config (&io_conf);
+	if (ret != ESP_OK) {
+		return ret;
+	}
+
+	ret = gpio_wakeup_enable (gpio_num, GPIO_INTR_HIGH_LEVEL);
+	if (ret != ESP_OK) {
+		return ret;
+	}
+
+	return esp_sleep_enable_gpio_wakeup ();
+}
+
+bool
+Accelerometer::is_wakeup_source () {
+	return (esp_sleep_get_wakeup_causes () & ESP_SLEEP_WAKEUP_GPIO) != 0;
 }
 
 esp_err_t

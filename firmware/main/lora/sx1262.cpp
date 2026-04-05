@@ -196,6 +196,13 @@ LoRaDriver::sleep () {
 }
 
 esp_err_t
+LoRaDriver::wake () {
+	ESP_ERROR_CHECK (standby ());
+	ESP_LOGD (TAG, "SX1262 woke from sleep");
+	return ESP_OK;
+}
+
+esp_err_t
 LoRaDriver::standby () {
 	ESP_ERROR_CHECK (write_reg (SX1262_CMD_SET_STANDBY, nullptr, 0));
 	mode_ = LoRaMode::STANDBY;
