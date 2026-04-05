@@ -32,10 +32,24 @@ Rules for AI agents (like OpenCode) working on this repository alongside a human
 
 ## After CI Passes
 
-1. Report status to human
-2. List what was changed
-3. Wait for human approval
-4. **Do NOT merge** - Even if CI passes
+### PR Review Follow-up
+
+1. Review all PR comments from reviewers
+2. For each comment requiring code changes:
+   - Implement the fix, OR
+   - If declining, explain why in a PR comment
+3. For suggestions (not required changes):
+   - Document unimplemented suggestions in the PR body or a comment
+   - Mark as "deferred to future work" or similar
+4. If changes were made, push updates and wait for re-review
+5. Report final status to human
+
+### Checklist
+
+- [ ] All PR review comments addressed
+- [ ] Unimplemented suggestions documented in PR
+- [ ] CI passes
+- [ ] Report status to human
 
 ## Communication Format
 
