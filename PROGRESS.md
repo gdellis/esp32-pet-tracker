@@ -10,17 +10,18 @@
   - Added `configure_wakeup_sources()` for GPIO wakeup
   - Fixed `get_wakeup_source()` to distinguish MOTION vs BUTTON
   - Fixed duplicate `esp_sleep_enable_gpio_wakeup()` calls
-- **Phase 3**: Error handling (PR #17 open)
+- **Phase 3**: Error handling (PR #17 merged)
   - `TrackerStateMachine::init()` now checks and propagates `Config::init()` and `Config::load()` errors
   - `Config::load()` returns `ESP_ERR_NOT_FOUND` when NVS is empty (all defaults used)
+  - Config load log uses `ESP_LOGW` when all defaults used
 
 ### In Progress
 
 - **Phase 4**: Integration (ButtonHandler, geofence, BLE notifications, last_wake tracking)
-
-### Remaining
-
-- Phase 5: GPS power control (hardware dependent)
+  - ButtonHandler exists but not integrated into state machine
+  - Geofence exists but not integrated
+  - BLE notifications not sent on geofence events
+  - `last_wake` tracked but not used for sleep duration decisions
 
 ---
 
@@ -44,8 +45,35 @@
 | 9 | Integration testing | Pending |
 | 10 | Base station (Pi + Python) | Pending |
 | 11 | Flask Web UI | Pending |
-| 12 | PCB design | In Progress |
+| 12 | PCB design | Pending |
 | 13 | Enclosure design | Pending |
+
+---
+
+## Phase 4: Integration Details
+
+### ButtonHandler Integration
+
+- **Status**: Exists but not integrated
+- **Files**: `button_handler.cpp`, `button_handler.hpp`
+- **Need**: Integrate into state machine to handle button press events
+
+### Geofence Integration
+
+- **Status**: Exists but not integrated
+- **Files**: `geofence.cpp`, `geofence.hpp`
+- **Need**: Check location against geofences after GPS fix, trigger BLE notification if breach detected
+
+### BLE Notifications
+
+- **Status**: Not implemented
+- **Current**: BLE GATT server exists for fallback TX
+- **Need**: Send notification to connected device on geofence breach
+
+### last_wake Tracking
+
+- **Status**: Tracked in `TrackerContext.last_wake` but not used
+- **Need**: Use `last_wake` to adjust sleep duration (e.g., shorter sleep after button wake)
 
 ---
 
