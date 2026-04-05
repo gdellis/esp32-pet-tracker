@@ -72,10 +72,18 @@ Config::load (TrackerConfig& config) {
 	}
 
 	nvs_close (handle);
-	ESP_LOGI (TAG,
-			  "Config loaded: device_id=0x%08x, sleep=%ums, stationary=%ums, tx_power=%u, sf=%u",
-			  config.device_id, config.sleep_interval_ms, config.stationary_interval_ms,
-			  config.tx_power, config.spreading_factor);
+	if (any_read_ok) {
+		ESP_LOGI (
+			TAG, "Config loaded: device_id=0x%08x, sleep=%ums, stationary=%ums, tx_power=%u, sf=%u",
+			config.device_id, config.sleep_interval_ms, config.stationary_interval_ms,
+			config.tx_power, config.spreading_factor);
+	} else {
+		ESP_LOGW (TAG,
+				  "Config load failed, using defaults: device_id=0x%08x, sleep=%ums, "
+				  "stationary=%ums, tx_power=%u, sf=%u",
+				  config.device_id, config.sleep_interval_ms, config.stationary_interval_ms,
+				  config.tx_power, config.spreading_factor);
+	}
 	return any_read_ok ? ESP_OK : ESP_ERR_NOT_FOUND;
 }
 
