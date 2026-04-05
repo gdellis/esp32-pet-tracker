@@ -27,33 +27,47 @@ Config::load (TrackerConfig& config) {
 		return ret;
 	}
 
+	bool any_read_ok = false;
+
 	ret = get_u32 (handle, "device_id", config.device_id);
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		config.device_id = DEFAULT_DEVICE_ID;
 	}
 
 	ret = get_u32 (handle, "sleep_interval", config.sleep_interval_ms);
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		config.sleep_interval_ms = DEFAULT_SLEEP_INTERVAL_MS;
 	}
 
 	ret = get_u32 (handle, "stationary_interval", config.stationary_interval_ms);
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		config.stationary_interval_ms = DEFAULT_STATIONARY_INTERVAL_MS;
 	}
 
 	ret = get_u8 (handle, "tx_power", config.tx_power);
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		config.tx_power = DEFAULT_TX_POWER;
 	}
 
 	ret = get_u8 (handle, "spreading_factor", config.spreading_factor);
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		config.spreading_factor = DEFAULT_SPREADING_FACTOR;
 	}
 
 	ret = get_str (handle, "device_name", config.device_name, sizeof (config.device_name));
-	if (ret != ESP_OK) {
+	if (ret == ESP_OK) {
+		any_read_ok = true;
+	} else {
 		strlcpy (config.device_name, DEFAULT_DEVICE_NAME, sizeof (config.device_name));
 	}
 
@@ -62,7 +76,7 @@ Config::load (TrackerConfig& config) {
 			  "Config loaded: device_id=0x%08x, sleep=%ums, stationary=%ums, tx_power=%u, sf=%u",
 			  config.device_id, config.sleep_interval_ms, config.stationary_interval_ms,
 			  config.tx_power, config.spreading_factor);
-	return ESP_OK;
+	return any_read_ok ? ESP_OK : ESP_ERR_NOT_FOUND;
 }
 
 esp_err_t

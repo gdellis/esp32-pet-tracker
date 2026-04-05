@@ -17,8 +17,17 @@ TrackerStateMachine::TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerome
 
 void
 TrackerStateMachine::init () {
-	Config::init ();
-	Config::load (config_);
+	esp_err_t err = Config::init ();
+	if (err != ESP_OK) {
+		ESP_LOGE (TAG, "Config::init() failed: %s", esp_err_to_name (err));
+		transition_to (TrackerState::ERROR);
+		return;
+	}
+
+	err = Config::load (config_);
+	if (err != ESP_OK) {
+		ESP_LOGW (TAG, "Config::load() failed: %s, using defaults", esp_err_to_name (err));
+	}
 
 	lora_.set_tx_power (config_.tx_power);
 	lora_.set_spreading_factor (config_.spreading_factor);
