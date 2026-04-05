@@ -20,6 +20,7 @@ Rules for AI agents (like OpenCode) working on this repository alongside a human
 - [ ] Tests added/updated if adding functionality
 - [ ] CI passes locally (if possible)
 - [ ] Commit message is clear and follows conventions
+- [ ] CHANGELOG.md updated with entry under `[Unreleased]`
 
 ### Branch Naming
 
@@ -65,5 +66,6 @@ When reporting PR status, use:
 - ✅ Create PRs for all changes
 - ✅ Wait for human approval before merge
 - ✅ Report CI failures with error details
+- ✅ Update CHANGELOG.md when changes are made (add entry under `[Unreleased]`)
 - ✅ Update AGENTS.md or docs when processes change
 - ✅ Ask for clarification on ambiguous requests

@@ -106,3 +106,4 @@ Use PostgreSQL as the primary database.
 - **Use examples**: Show, don't just tell
 - **Be concise**: Remove unnecessary words
 - **Link don't duplicate**: Reference other docs instead of copying
+- **Update CHANGELOG.md**: Add entries under `[Unreleased]` for all notable changes (fixes, features, breaking changes)
