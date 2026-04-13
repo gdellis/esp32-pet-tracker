@@ -45,3 +45,5 @@ hardware/**/*-backups/
 .pytest_cache/
 .ruff_cache/
 **/build/
+.opencode/session*.md
+.opencode/package-lock.json

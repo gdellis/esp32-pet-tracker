@@ -1,8 +1,8 @@
-# ESP32 Pet Tracker
+# LoRaPaws32
 
 **⚠️ IMPORTANT: Never merge PRs unless explicitly instructed by the user.**
 
-ESP32 pet tracker firmware built with C++ and ESP-IDF framework.
+LoRa-based pet tracker firmware built with C++ and ESP-IDF framework.
 
 ## Project Overview
 

@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Phase 4: `last_wake` now assigned and used for sleep duration decisions
 - Phase 4: Geofence integration - location checked against zones after GPS fix
 - Phase 4: BLE alert sent on geofence breach
+- Renamed project to LoRaPaws32
 
 ## [0.2.0] - 2025-04-05
 

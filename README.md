@@ -1,4 +1,6 @@
-# Pet Tracker for ESP32
+# LoRaPaws32
+
+![LoRaPaws32 Logo](resources/LoRaPaws32-nobg.png)
 
 [![C++](https://img.shields.io/badge/C++-00599C?logo=cpp)](https://isocpp.org/)
 [![ESP-IDF](https://img.shields.io/badge/ESP--IDF-v6.0-green?logo=espressif)](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c6/)
@@ -6,7 +8,7 @@
 [![CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](LICENSE-DESIGNS)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
-ESP32-based pet tracker using LoRa radio to communicate with a home base station, which forwards data to the cloud.
+LoRa-based pet tracker using LoRa radio to communicate with a home base station, which forwards data to the cloud.
 
 ## Features
 
@@ -42,7 +44,7 @@ flowchart LR
 ## Project Structure
 
 ```
-esp32-pet-tracker/
+LoRaPaws32/
 ├── firmware/              # C++ ESP-IDF firmware
 │   ├── CMakeLists.txt
 │   ├── build.sh          # Docker-based build
