@@ -18,6 +18,7 @@ constexpr uint16_t BLE_DEVICE_NAME_MAX = 32;
 
 constexpr uint16_t BLE_MIN_INTERVAL_MS = 20;
 constexpr uint16_t BLE_MAX_INTERVAL_MS = 40;
+constexpr uint16_t BLE_MUTEX_TIMEOUT_MS = 100;
 
 struct BleLocationData {
 	int32_t latitude;
