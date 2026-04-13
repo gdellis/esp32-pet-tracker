@@ -680,8 +680,8 @@ For the base station carrier board with Raspberry Pi header:
 - [x] ~~Fix BLE critical bugs~~ → PR #23
 - [x] ~~Add GPS + geofence integration tests~~ → PR #24
 - [ ] Design power supply (charger + LDO + power switch for GPS)
-- [ ] Implement GPS power switching (MOSFET control)
-- [ ] Implement battery ADC reading
+- [x] ~~Implement GPS power switching (MOSFET control)~~ → Implemented PR #25
+- [x] ~~Implement battery ADC reading~~ → Implemented PR #25
 - [ ] Verify SX1262 pin mapping with actual board
 - [ ] Order components:
   - [ ] ESP32-S3 or ESP32-C6 module

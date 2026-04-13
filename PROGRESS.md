@@ -145,8 +145,8 @@
 
 1. ~~Fix critical BLE bugs~~ - ✅ Done (PR #23 merged)
 2. ~~Phase 9: Integration testing~~ - ✅ Done (PR #24 merged)
-3. **Implement GPS power switching** - MOSFET control for battery savings
-4. **Implement battery ADC reading** - Real battery voltage in transmissions
+3. ~~GPS power switching~~ - ✅ Done (PR #25)
+4. ~~Battery ADC reading~~ - ✅ Done (PR #25)
 5. **Phase 10: Base station** - Start Python/Flask receiver (firmware LoRa TX is complete)
 6. **PCB design** - Begin KiCad layout to enable battery reading
 

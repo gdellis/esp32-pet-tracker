@@ -4,7 +4,7 @@
 #include "esp_err.h"
 #include <stdint.h>
 
-constexpr uint8_t BATTERY_ADC_UNIT = ADC_UNIT_1;
+constexpr adc_unit_t BATTERY_ADC_UNIT = ADC_UNIT_1;
 constexpr adc_channel_t BATTERY_ADC_CHANNEL = ADC_CHANNEL_0;
 constexpr uint32_t BATTERY_DIVIDER_R1_OHMS = 100000;
 constexpr uint32_t BATTERY_DIVIDER_R2_OHMS = 100000;
