@@ -27,9 +27,7 @@ jobs:
           if [ -z "${{ secrets.OLLAMA_API_KEY }}" ]; then
             echo "Error: OLLAMA_API_KEY secret is not set or empty"
             exit 1
-          fi
-          
-          
+          fi  
       
       - uses: anomalyco/opencode/github@latest
         env:
@@ -50,9 +48,4 @@ jobs:
             - Add categories to each comment like [BUG], [IMPROVEMENT], [BEST PRACTICE], [SECURITY] and severity levels like [LOW], [MEDIUM], [HIGH]. Try to avoid unnecessary nitpicks unless they are important and hint towards a larger issue.
             - If there are no issues, say "No issues found. Good job!"
 
-      - name: Add reviewer
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-reviewer opencode-agent[bot]
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
