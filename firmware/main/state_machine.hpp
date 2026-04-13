@@ -2,7 +2,6 @@
 
 #include "accelerometer.hpp"
 #include "ble.hpp"
-#include "button_handler.hpp"
 #include "config.hpp"
 #include "geofence.hpp"
 #include "gps.hpp"
@@ -58,7 +57,6 @@ class TrackerStateMachine {
 	void check_motion ();
 	void check_geofence ();
 	void update_activity_time ();
-	bool check_button ();
 	esp_err_t transmit_location ();
 	esp_err_t try_lora_send (const GpsData& data, bool valid_fix);
 	esp_err_t try_ble_fallback (const GpsData& data, bool valid_fix);
@@ -71,7 +69,6 @@ class TrackerStateMachine {
 	Accelerometer& accel_;
 	BleServer& ble_;
 	LedDriver& led_;
-	ButtonHandler button_;
 	TrackerConfig config_;
 	bool geofence_breach_ = false;
 };

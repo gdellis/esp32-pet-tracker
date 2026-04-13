@@ -13,7 +13,7 @@ static const char* TAG = "tracker";
 TrackerStateMachine::TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel,
 										  BleServer& ble, LedDriver& led)
 	: ctx_ ({ TrackerState::INIT, WakeSource::NONE, 0, false, false, 0, 0 }), gps_ (gps),
-	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led), button_ (BOARD_BUTTON_PIN) {}
+	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led) {}
 
 void
 TrackerStateMachine::init () {
@@ -229,11 +229,6 @@ TrackerStateMachine::check_geofence () {
 void
 TrackerStateMachine::update_activity_time () {
 	ctx_.last_activity_time = esp_timer_get_time () / 1000;
-}
-
-bool
-TrackerStateMachine::check_button () {
-	return button_.check_pressed ();
 }
 
 uint32_t
