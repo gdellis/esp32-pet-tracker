@@ -143,7 +143,7 @@
 
 ### Recommended Next Steps
 
-1. **Fix critical BLE bugs** - Populate characteristic handles, wire up `update_location()` notifications
+1. ~~Fix critical BLE bugs~~ - ✅ Done (PR #23 merged)
 2. **Phase 9: Integration testing** - Test full state machine flow with mocks
 3. **Phase 10: Base station** - Start Python/Flask receiver (firmware LoRa TX is complete)
 4. **PCB design** - Begin KiCad layout to enable battery reading
