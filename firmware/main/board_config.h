@@ -46,7 +46,7 @@
 /** @brief LIS3DH I2C SCL GPIO */
 #define BOARD_ACCEL_SCL_PIN GPIO_NUM_12
 /** @brief Battery voltage ADC GPIO (100k/100k divider) */
-#define BOARD_BATTERY_ADC_PIN GPIO_NUM_1
+#define BOARD_BATTERY_ADC_PIN GPIO_NUM_10
 
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)
 #include <driver/gpio.h>
