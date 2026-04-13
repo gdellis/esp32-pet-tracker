@@ -7,7 +7,7 @@ on:
       - '**'  # Run on ALL changes
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  group: pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -27,14 +27,14 @@ jobs:
           if [ -z "${{ secrets.OLLAMA_API_KEY }}" ]; then
             echo "Error: OLLAMA_API_KEY secret is not set or empty"
             exit 1
-          fi
+          fi  
       
       - uses: anomalyco/opencode/github@latest
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: "ollama-cloud/qwen3-coder:480b"
+          model: ${{ secrets.REVIEW_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}
           use_github_token: true
           prompt: |
             Review this pull request:
@@ -48,8 +48,4 @@ jobs:
             - Add categories to each comment like [BUG], [IMPROVEMENT], [BEST PRACTICE], [SECURITY] and severity levels like [LOW], [MEDIUM], [HIGH]. Try to avoid unnecessary nitpicks unless they are important and hint towards a larger issue.
             - If there are no issues, say "No issues found. Good job!"
 
-      - name: Add reviewer
-        run: |
-          gh pr edit ${{ github.event.pull_request.number }} --add-reviewer gdellis
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      

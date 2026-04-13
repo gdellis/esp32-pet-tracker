@@ -116,15 +116,24 @@ BleServer::stop () {
 
 esp_err_t
 BleServer::update_location (const BleLocationData& location) {
-	if (!connected_) {
-		return ESP_ERR_INVALID_STATE;
-	}
-
-	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) != pdTRUE) {
 		return ESP_ERR_TIMEOUT;
 	}
 	current_location_ = location;
 	xSemaphoreGive (mutex_);
+
+	if (connected_ && location_char_handle_ != 0) {
+		uint8_t loc_data[sizeof (BleLocationData)];
+		memcpy (loc_data, &location, sizeof (loc_data));
+
+		esp_err_t ret
+			= esp_ble_gatts_send_indicate (service_handle_, connection_id_, location_char_handle_,
+										   sizeof (loc_data), loc_data, false);
+		if (ret != ESP_OK) {
+			ESP_LOGE (TAG, "Failed to send location indication: %s", esp_err_to_name (ret));
+			return ret;
+		}
+	}
 
 	return ESP_OK;
 }
@@ -135,7 +144,7 @@ BleServer::send_alert (const BleAlertData& alert) {
 		return ESP_ERR_INVALID_STATE;
 	}
 
-	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) != pdTRUE) {
 		return ESP_ERR_TIMEOUT;
 	}
 	current_alert_ = alert;
@@ -159,7 +168,7 @@ BleServer::set_device_name (const char* name) {
 		return ESP_ERR_INVALID_ARG;
 	}
 
-	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) != pdTRUE) {
 		return ESP_ERR_TIMEOUT;
 	}
 
@@ -221,7 +230,9 @@ BleServer::add_characteristics () {
 
 	esp_err_t ret = esp_ble_gatts_add_char (service_handle_, &loc_uuid, ESP_GATT_PERM_READ,
 											ESP_GATT_CHAR_PROP_BIT_READ, &attr_val, &attr_ctrl);
-	(void)ret;
+	if (ret != ESP_OK) {
+		ESP_LOGE (TAG, "Failed to add location characteristic: %s", esp_err_to_name (ret));
+	}
 
 	esp_bt_uuid_t name_uuid = {
 		.len = ESP_UUID_LEN_16,
@@ -231,7 +242,9 @@ BleServer::add_characteristics () {
 	ret = esp_ble_gatts_add_char (
 		service_handle_, &name_uuid, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
 		ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE, &attr_val, &attr_ctrl);
-	(void)ret;
+	if (ret != ESP_OK) {
+		ESP_LOGE (TAG, "Failed to add name characteristic: %s", esp_err_to_name (ret));
+	}
 
 	esp_bt_uuid_t alert_uuid = {
 		.len = ESP_UUID_LEN_16,
@@ -241,7 +254,9 @@ BleServer::add_characteristics () {
 	ret = esp_ble_gatts_add_char (service_handle_, &alert_uuid, ESP_GATT_PERM_READ,
 								  ESP_GATT_CHAR_PROP_BIT_NOTIFY | ESP_GATT_CHAR_PROP_BIT_READ,
 								  &attr_val, &attr_ctrl);
-	(void)ret;
+	if (ret != ESP_OK) {
+		ESP_LOGE (TAG, "Failed to add alert characteristic: %s", esp_err_to_name (ret));
+	}
 }
 
 void
@@ -287,7 +302,7 @@ BleServer::start_advertising () {
 
 void
 BleServer::send_location_response (uint16_t conn_id, uint16_t trans_id, uint16_t handle) {
-	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) != pdTRUE) {
 		return;
 	}
 
@@ -306,7 +321,7 @@ BleServer::send_location_response (uint16_t conn_id, uint16_t trans_id, uint16_t
 
 void
 BleServer::send_name_response (uint16_t conn_id, uint16_t trans_id, uint16_t handle) {
-	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) != pdTRUE) {
+	if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) != pdTRUE) {
 		return;
 	}
 
@@ -380,7 +395,7 @@ BleServer::on_gatts_event (esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if,
 
 	case ESP_GATTS_WRITE_EVT:
 		if (param->write.handle == name_char_handle_) {
-			if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (100)) == pdTRUE) {
+			if (xSemaphoreTake (mutex_, pdMS_TO_TICKS (BLE_MUTEX_TIMEOUT_MS)) == pdTRUE) {
 				size_t len = param->write.len;
 				if (len >= BLE_DEVICE_NAME_MAX) {
 					len = BLE_DEVICE_NAME_MAX - 1;
