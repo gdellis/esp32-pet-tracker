@@ -16,26 +16,26 @@ constexpr uint32_t BATTERY_EMPTY_SCALE_MV = 3000;
 
 class BatteryDriver {
   public:
-	BatteryDriver ();
+	BatteryDriver () : initialized_ (false) {}
 
 	esp_err_t init ();
+	esp_err_t deinit ();
 
 	uint16_t
 	read_voltage_mv () {
 		if (!initialized_) {
+			ESP_LOGW ("BATTERY", "Battery not initialized");
 			return 0;
 		}
 
 		int raw = 0;
 		esp_err_t err = adc_oneshot_read (adc_handle_, BATTERY_ADC_CHANNEL, &raw);
 		if (err != ESP_OK) {
+			ESP_LOGW ("BATTERY", "ADC read failed: %s", esp_err_to_name (err));
 			return 0;
 		}
 
-		// ADC_ATTEN_DB_12 extends range to ~3.1V input, so we need to account
-		// for the voltage divider ratio to get the actual battery voltage.
-		// Formula: voltage_mv = raw * vref / ADC_MAX * (R1 + R2) / R2
-		uint32_t voltage_mv = (uint32_t)raw * BATTERY_ADC_VREF_MV / BATTERY_ADC_MAX * 2;
+		uint32_t voltage_mv = (uint32_t)raw * BATTERY_ADC_VREF_MV * 2 / BATTERY_ADC_MAX;
 		return (uint16_t)(voltage_mv);
 	}
 

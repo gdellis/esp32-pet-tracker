@@ -4,8 +4,6 @@
 
 static const char* TAG = "battery";
 
-BatteryDriver::BatteryDriver () : initialized_ (false) {}
-
 esp_err_t
 BatteryDriver::init () {
 	adc_oneshot_unit_init_cfg_t init_config = {};
@@ -29,5 +27,14 @@ BatteryDriver::init () {
 
 	initialized_ = true;
 	ESP_LOGI (TAG, "Battery driver initialized");
+	return ESP_OK;
+}
+
+esp_err_t
+BatteryDriver::deinit () {
+	if (initialized_) {
+		adc_oneshot_del_unit (adc_handle_);
+		initialized_ = false;
+	}
 	return ESP_OK;
 }

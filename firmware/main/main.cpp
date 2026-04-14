@@ -53,7 +53,10 @@ app_main (void) {
 	ble.start ();
 
 	static BatteryDriver battery;
-	battery.init ();
+	esp_err_t battery_err = battery.init ();
+	if (battery_err != ESP_OK) {
+		ESP_LOGE (TAG, "Battery init failed: %s", esp_err_to_name (battery_err));
+	}
 
 	static TrackerStateMachine state_machine (gps, lora, accel, ble, led, battery);
 	state_machine.init ();

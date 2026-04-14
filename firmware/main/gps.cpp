@@ -44,13 +44,13 @@ Gps::init () {
 void
 Gps::power_on () {
 	gpio_set_level (BOARD_GPS_POWER_PIN, 1);
-	ESP_LOGI (TAG, "GPS powered on");
+	ESP_LOGD (TAG, "GPS powered on");
 }
 
 void
 Gps::power_off () {
 	gpio_set_level (BOARD_GPS_POWER_PIN, 0);
-	ESP_LOGI (TAG, "GPS powered off");
+	ESP_LOGD (TAG, "GPS powered off");
 }
 
 bool
