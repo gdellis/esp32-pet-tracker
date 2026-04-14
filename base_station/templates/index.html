@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoRaPaws32 Tracker</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>LoRaPaws32 Tracker</h1>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/map">Map</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="device-list">
+            <h2>Devices</h2>
+            <div id="devices" class="devices">
+                <p class="loading">Loading devices...</p>
+            </div>
+        </section>
+
+        <section class="device-detail" id="device-detail" style="display: none;">
+            <h2 id="device-name">Device Details</h2>
+            <div class="device-info">
+                <div class="stat">
+                    <span class="label">Battery</span>
+                    <span class="value" id="battery">--</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Signal</span>
+                    <span class="value" id="signal">--</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Last Update</span>
+                    <span class="value" id="last-update">--</span>
+                </div>
+                <div class="stat">
+                    <span class="label">Location</span>
+                    <span class="value" id="location">--</span>
+                </div>
+            </div>
+
+            <div class="location-history">
+                <h3>Location History</h3>
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Altitude</th>
+                            <th>Battery</th>
+                            <th>Valid</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>LoRaPaws32 Base Station</p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+:root {
+    --bg-color: #1a1a2e;
+    --card-bg: #16213e;
+    --text-color: #eee;
+    --text-muted: #888;
+    --accent: #0f3460;
+    --highlight: #e94560;
+    --success: #4ecca3;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --border-radius: 8px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: var(--card-bg);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--accent);
+}
+
+header h1 {
+    font-size: 1.5rem;
+    color: var(--highlight);
+}
+
+nav a {
+    color: var(--text-color);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    transition: background 0.2s;
+}
+
+nav a:hover {
+    background: var(--accent);
+}
+
+main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+section {
+    margin-bottom: 2rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+.device-list .devices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.device-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid transparent;
+}
+
+.device-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    border-color: var(--highlight);
+}
+
+.device-card .name {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.device-card .stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.device-card .battery {
+    color: var(--success);
+}
+
+.device-card .battery.low {
+    color: var(--danger);
+}
+
+.device-card .battery.medium {
+    color: var(--warning);
+}
+
+.loading {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 2rem;
+}
+
+.device-detail {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+}
+
+.device-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat {
+    background: var(--accent);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+}
+
+.stat .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.stat .value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-top: 0.25rem;
+}
+
+.location-history table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.location-history th,
+.location-history td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--accent);
+}
+
+.location-history th {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.location-history tbody tr:hover {
+    background: var(--accent);
+}
+
+.valid {
+    color: var(--success);
+}
+
+.invalid {
+    color: var(--danger);
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    border-top: 1px solid var(--accent);
+}
