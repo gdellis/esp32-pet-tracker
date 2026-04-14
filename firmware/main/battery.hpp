@@ -22,7 +22,9 @@ class BatteryDriver {
 	esp_err_t init ();
 	esp_err_t deinit ();
 
+	/// @return Battery voltage in millivolts, or std::nullopt if read failed
 	std::optional<uint16_t> read_voltage_mv ();
+	/// @return Battery percentage (0-100), or std::nullopt if read failed
 	std::optional<uint8_t> read_percentage ();
 
   private:
