@@ -20,7 +20,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-      pull-requests: write
+      pull-requests: read
       issues: write
     steps:
       - name: Checkout repository
@@ -34,5 +34,4 @@ jobs:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         with:
-          use_github_token: true
           model: ${{ secrets.OC_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}

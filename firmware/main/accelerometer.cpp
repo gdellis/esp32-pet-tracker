@@ -1,13 +1,16 @@
 #include "accelerometer.hpp"
 #include "board_config.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_log.h"
 #include "esp_sleep.h"
+#include "freertos/FreeRTOS.h"
 
 static const char* TAG = "lis3dh";
 
 static i2c_port_t s_i2c_port = I2C_NUM_0;
 static gpio_num_t s_int_pin = GPIO_NUM_0;
+static i2c_master_bus_handle_t s_i2c_bus_handle;
+static i2c_master_dev_handle_t s_i2c_device_handle;
 
 Accelerometer::Accelerometer (i2c_port_t i2c_port, gpio_num_t int_pin)
 	: i2c_port_ (i2c_port), int_pin_ (int_pin) {}
@@ -17,20 +20,23 @@ Accelerometer::init (i2c_port_t i2c_port, gpio_num_t int_pin) {
 	s_i2c_port = i2c_port;
 	s_int_pin = int_pin;
 
-	i2c_config_t conf = { .mode = I2C_MODE_MASTER,
-						  .sda_io_num = BOARD_ACCEL_SDA_PIN,
-						  .scl_io_num = BOARD_ACCEL_SCL_PIN,
-						  .sda_pullup_en = GPIO_PULLUP_ENABLE,
-						  .scl_pullup_en = GPIO_PULLUP_ENABLE,
-						  .master = { .clk_speed = 100000 },
-						  .clk_flags = 0 };
+	i2c_master_bus_config_t bus_conf
+		= { i2c_port, BOARD_ACCEL_SDA_PIN, BOARD_ACCEL_SCL_PIN, I2C_CLK_SRC_DEFAULT, 7, 0, 0, 0,
+			true };
 
-	esp_err_t ret = i2c_param_config (i2c_port, &conf);
+	esp_err_t ret = i2c_new_master_bus (&bus_conf, &s_i2c_bus_handle);
 	if (ret != ESP_OK) {
 		return ret;
 	}
 
-	return i2c_driver_install (i2c_port, I2C_MODE_MASTER, 0, 0, 0);
+	i2c_device_config_t dev_conf = { I2C_ADDR_BIT_LEN_7, LIS3DH_I2C_ADDR, 100000, 0, 0 };
+
+	ret = i2c_master_bus_add_device (s_i2c_bus_handle, &dev_conf, &s_i2c_device_handle);
+	if (ret != ESP_OK) {
+		return ret;
+	}
+
+	return ESP_OK;
 }
 
 esp_err_t
@@ -199,88 +205,18 @@ Accelerometer::is_wakeup_source () {
 esp_err_t
 Accelerometer::write_reg (uint8_t reg, uint8_t value) {
 	uint8_t data[2] = { reg, value };
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create ();
 
-	esp_err_t ret = i2c_master_start (cmd);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_write_byte (cmd, (LIS3DH_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_write (cmd, data, 2, true);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_stop (cmd);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_cmd_begin (i2c_port_, cmd, pdMS_TO_TICKS (100));
-	i2c_cmd_link_delete (cmd);
-
-	return ret;
+	return i2c_master_transmit (s_i2c_device_handle, data, 2, pdMS_TO_TICKS (100));
 }
 
 esp_err_t
 Accelerometer::read_reg (uint8_t reg, uint8_t& value) {
-	i2c_cmd_handle_t cmd = i2c_cmd_link_create ();
-
-	esp_err_t ret = i2c_master_start (cmd);
+	esp_err_t ret = i2c_master_transmit (s_i2c_device_handle, &reg, 1, pdMS_TO_TICKS (100));
 	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
 		return ret;
 	}
 
-	ret = i2c_master_write_byte (cmd, (LIS3DH_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_write_byte (cmd, reg, true);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_start (cmd);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_write_byte (cmd, (LIS3DH_I2C_ADDR << 1) | I2C_MASTER_READ, true);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_read_byte (cmd, &value, I2C_MASTER_LAST_NACK);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_stop (cmd);
-	if (ret != ESP_OK) {
-		i2c_cmd_link_delete (cmd);
-		return ret;
-	}
-
-	ret = i2c_master_cmd_begin (i2c_port_, cmd, pdMS_TO_TICKS (100));
-	i2c_cmd_link_delete (cmd);
-
-	return ret;
+	return i2c_master_receive (s_i2c_device_handle, &value, 1, pdMS_TO_TICKS (100));
 }
 
 esp_err_t

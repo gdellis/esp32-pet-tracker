@@ -1,7 +1,7 @@
 #pragma once
 
 #include "driver/gpio.h"
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "esp_sleep.h"
 #include <stdint.h>
