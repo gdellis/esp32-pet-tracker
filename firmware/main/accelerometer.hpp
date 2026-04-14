@@ -66,5 +66,4 @@ class Accelerometer {
 
 	i2c_port_t i2c_port_;
 	gpio_num_t int_pin_;
-	i2c_master_dev_handle_t i2c_device_handle_;
 };
