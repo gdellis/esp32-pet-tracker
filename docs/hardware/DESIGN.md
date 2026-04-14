@@ -13,49 +13,62 @@ cloud connectivity for remote monitoring via mobile app.
 
 ## Hardware
 
-### Main Board: ESP32-C6 (RISC-V)
+### Main Board: ESP32-S3 (primary) / ESP32-C6 (alternate)
 
-**Target**: ESP32-C6-WROOM-1C or compatible module
+**Target**: ESP32-S3-WROOM-1 (primary) or ESP32-C6-WROOM-1C (alternate)
 
-- **MCU**: ESP32-C6 (RISC-V, 160 MHz, with RISC-V vectoring)
+- **ESP32-S3**: Xtensa dual-core 32-bit, 240 MHz, BLE 5.0
+- **ESP32-C6**: RISC-V single-core, 160 MHz, BLE 5.0
 - **LoRa**: SX1262 (868/915 MHz) via SPI
 - **Interfaces**: SPI, UART, I2C, GPIO for GPS/sensor expansion
-- **Size**: ~20x20mm module
 - **Deep sleep current**: ~10-20 µA (CPU off, RTC memory retained)
 
-### GPS Module: u-blox NEO-6M (or compatible)
+### GPS Module: HGLRC M100-5883 (M10, 72ch, multi-GNSS)
 
-- **Interface**: UART (TX/RX)
+- **Interface**: UART (TX/RX at 115200 baud)
 - **Accuracy**: ~2.5 m CEP
 - **Operating voltage**: 2.7–3.6 V
 - **Cold start**: ~27 s typical
 - **Hot start**: ~1 s
 - **Active current**: ~20–25 mA during acquisition
-- **Sleep current**: ~1 mA (if supported)
+- **Sleep current**: Must be powered off completely (no true sleep)
 
-**Pin Mapping (ESP32-C6 → GPS)**:
+**Pin Mapping**:
 
-| ESP32-C6 Pin | GPS Module | Function |
-|--------------|------------|----------|
-| GPIO7 (UART1 TX) | RX | ESP data out → GPS TX |
-| GPIO15 (UART1 RX) | TX | GPS data out → ESP RX |
-| 3V3 | VCC | Power (or via LDO if needed) |
-| GND | GND | Ground |
+| ESP32-S3 Pin | ESP32-C6 Pin | GPS Module | Function |
+|--------------|--------------|------------|----------|
+| GPIO7 | GPIO4 | RX | ESP data out → GPS TX |
+| GPIO15 | GPIO5 | TX | GPS data out → ESP RX |
+| 3V3 | 3V3 | VCC | Power (via LDO) |
+| GND | GND | GND | Ground |
 
-**Note**: NEO-6M draws significant current. Use a GPIO-controlled power switch to completely cut power between GPS fixes.
+**Note**: GPS draws significant current. Use a GPIO-controlled power switch to completely cut power between GPS fixes.
 
 ### LoRa Radio: SX1262
 
-**Pin Mapping (ESP32-C6 → SX1262)**:
+**ESP32-S3 Pin Mapping**:
 
-| ESP32-C6 Pin | SX1262 | Function |
+| ESP32-S3 Pin | SX1262 | Function |
 |--------------|--------|----------|
 | GPIO4 | SPI MOSI | Data out |
 | GPIO5 | SPI MISO | Data in |
 | GPIO6 | SPI CLK | Clock |
-| GPIO1 | NSS | Chip select |
-| GPIO2 | Reset | Reset line |
+| GPIO8 | NSS | Chip select |
+| GPIO1 | Reset | Reset line |
+| GPIO2 | BUSY | Busy indicator |
 | GPIO3 | DIO1 | Interrupt/done |
+
+**ESP32-C6 Pin Mapping**:
+
+| ESP32-C6 Pin | SX1262 | Function |
+|--------------|--------|----------|
+| GPIO6 | SPI MOSI | Data out |
+| GPIO7 | SPI MISO | Data in |
+| GPIO8 | SPI CLK | Clock |
+| GPIO10 | NSS | Chip select |
+| GPIO11 | Reset | Reset line |
+| GPIO3 | BUSY | Busy indicator |
+| GPIO1 | DIO1 | Interrupt/done |
 
 ### Power Management
 
@@ -144,13 +157,25 @@ firmware/
 ├── build.sh                 # Docker-based build script
 ├── main/
 │   ├── main.cpp             # Boot, initialization, main task
-│   ├── gpio_driver.cpp      # GPIO abstraction
-│   ├── led_driver.cpp       # LED driver
-│   ├── button_handler.cpp   # Button debounce
-│   ├── gps.cpp              # GPS UART driver
-│   ├── nmea_parser.hpp      # Header-only NMEA parsing (testable on host)
-│   └── deep_sleep.hpp       # Deep sleep utility
-└── tests/                   # Host-based unit tests with mocks
+│   ├── board_config.h      # Pin mappings for ESP32-S3/C6
+│   ├── gpio_driver.cpp     # GPIO abstraction
+│   ├── led_driver.cpp      # LED driver
+│   ├── button_handler.cpp  # Button debounce
+│   ├── gps.cpp             # GPS UART driver
+│   ├── nmea_parser.hpp     # Header-only NMEA parsing (testable on host)
+│   ├── ble.cpp/.hpp        # BLE GATT server with alert notifications
+│   ├── config.cpp/.hpp     # NVS configuration storage
+│   ├── geofence.cpp/.hpp   # Circular geofence zone checking
+│   ├── accelerometer.cpp/.hpp  # LIS3DH I2C accelerometer driver
+│   ├── state_machine.cpp/.hpp  # Main tracker state machine
+│   ├── lora/
+│   │   ├── sx1262.cpp      # SX1262 LoRa driver
+│   │   └── sx1262.hpp
+│   └── deep_sleep.hpp      # Deep sleep utility
+└── tests/                  # Host-based unit tests with mocks
+    ├── test_*.cpp          # Catch2 test suites
+    ├── include/            # Mock headers for ESP-IDF
+    └── src/                # Mock implementations
 ```
 
 ### Key Interfaces
@@ -244,8 +269,10 @@ static constexpr uint8_t TX_RETRIES = 3;
 static constexpr uint32_t TX_TIMEOUT_MS = 5_000;       // Per retry timeout
 
 // Default wake intervals (stored in NVS, configurable)
-static constexpr uint32_t DEFAULT_SLEEP_INTERVAL_MS = 60_000;    // 1 minute when moving
-static constexpr uint32_t STATIONARY_SLEEP_INTERVAL_MS = 300_000; // 5 minutes when stationary
+static constexpr uint32_t DEFAULT_SLEEP_INTERVAL_MS = 300_000;     // 5 minutes when moving
+static constexpr uint32_t STATIONARY_SLEEP_INTERVAL_MS = 600_000; // 10 minutes when stationary
+static constexpr int8_t DEFAULT_TX_POWER_DBM = 22;               // +22 dBm
+static constexpr uint8_t DEFAULT_SPREADING_FACTOR = 7;            // SF7
 ```
 
 ### Startup Sequence
@@ -633,22 +660,33 @@ For the base station carrier board with Raspberry Pi header:
 
 ## TODO Before Build
 
-- [x] ~~Select final board~~ → **ESP32-C6** (RISC-V, BLE, low power)
+- [x] ~~Select final board~~ → **ESP32-S3** (primary) / **ESP32-C6** (alternate)
 - [x] ~~Select LoRa radio~~ → **SX1262** (low power SPI)
 - [x] ~~Select base station~~ → **Python on Raspberry Pi** with LoRa hat
 - [x] ~~Select MQTT broker~~ → **HiveMQ** (self-hosted)
-- [x] ~~Select GPS module~~ → **NEO-6M** (cheap, reliable, 25 mA)
+- [x] ~~Select GPS module~~ → **M10/M100-5883** (10Hz, 72ch, multi-GNSS)
 - [x] ~~Select LoRa frequency~~ → **915 MHz (US)**
 - [x] ~~Select waterproofing~~ → **Silicone gasket** (reusable, good seal)
 - [x] ~~Implement deep sleep feature~~ → Merged PR #1
 - [x] ~~Implement GPS driver with NMEA parsing~~ → Merged PR #2
-- [x] ~~Implement unit tests with mocks~~ → PR #3
+- [x] ~~Implement unit tests with mocks~~ → PR #3, PR #7
+- [x] ~~Implement LoRa SX1262 driver~~ → PR #6, PR #7
+- [x] ~~Implement BLE GATT server~~ → PR #9
+- [x] ~~Implement LIS3DH accelerometer~~ → PR #10
+- [x] ~~Implement state machine~~ → PR #11
+- [x] ~~Implement NVS config storage~~ → PR #12
+- [x] ~~Implement geofencing~~ → PR #13, PR #14
+- [x] ~~Implement motion-aware sleep~~ → PR #11
+- [x] ~~Fix BLE critical bugs~~ → PR #23
+- [x] ~~Add GPS + geofence integration tests~~ → PR #24
 - [ ] Design power supply (charger + LDO + power switch for GPS)
+- [x] ~~Implement GPS power switching (MOSFET control)~~ → Implemented PR #25
+- [x] ~~Implement battery ADC reading~~ → Implemented PR #25
 - [ ] Verify SX1262 pin mapping with actual board
 - [ ] Order components:
-  - [ ] ESP32-C6 module
+  - [ ] ESP32-S3 or ESP32-C6 module
   - [ ] SX1262 (915 MHz variant)
-  - [ ] NEO-6M GPS module
+  - [ ] M10/M100-5883 GPS module
   - [ ] LIS3DH accelerometer
   - [ ] LiPo battery (500–1000 mAh)
   - [ ] MCP1700 LDO
@@ -660,7 +698,8 @@ For the base station carrier board with Raspberry Pi header:
   - [ ] LoRa hat for Raspberry Pi (for base station)
 - [ ] Design PCB or protoboard layout
 - [ ] Design 3D-printed enclosure with silicone gasket groove
-- [ ] Implement tracker firmware (see Software Architecture)
+- [x] ~~Implement tracker firmware~~ → Mostly complete
 - [ ] Implement base station Python script
+- [ ] Implement Flask Web UI
 - [ ] Set up HiveMQ broker
 - [ ] Set up cloud backend (MQTT broker + database)

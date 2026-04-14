@@ -1,6 +1,7 @@
 #pragma once
 
 #include "accelerometer.hpp"
+#include "battery.hpp"
 #include "ble.hpp"
 #include "config.hpp"
 #include "geofence.hpp"
@@ -32,7 +33,7 @@ struct TrackerContext {
 class TrackerStateMachine {
   public:
 	TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel, BleServer& ble,
-						 LedDriver& led);
+						 LedDriver& led, BatteryDriver& battery);
 
 	void init ();
 	void run ();
@@ -69,6 +70,7 @@ class TrackerStateMachine {
 	Accelerometer& accel_;
 	BleServer& ble_;
 	LedDriver& led_;
+	BatteryDriver& battery_;
 	TrackerConfig config_;
 	bool geofence_breach_ = false;
 };

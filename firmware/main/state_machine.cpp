@@ -11,9 +11,10 @@
 static const char* TAG = "tracker";
 
 TrackerStateMachine::TrackerStateMachine (Gps& gps, LoRaDriver& lora, Accelerometer& accel,
-										  BleServer& ble, LedDriver& led)
+										  BleServer& ble, LedDriver& led, BatteryDriver& battery)
 	: ctx_ ({ TrackerState::INIT, WakeSource::NONE, 0, false, false, 0, 0 }), gps_ (gps),
-	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led) {}
+	  lora_ (lora), accel_ (accel), ble_ (ble), led_ (led), battery_ (battery),
+	  geofence_breach_ (false) {}
 
 void
 TrackerStateMachine::init () {
@@ -281,7 +282,7 @@ TrackerStateMachine::try_lora_send (const GpsData& data, bool valid_fix) {
 	int32_t lat = valid_fix ? (int32_t)(data.latitude * 1000000) : 0;
 	int32_t lon = valid_fix ? (int32_t)(data.longitude * 1000000) : 0;
 	int32_t alt = valid_fix ? (int32_t)(data.altitude * 100) : 0;
-	uint16_t battery = 0;
+	uint16_t battery = battery_.read_percentage ();
 	uint8_t flags = valid_fix ? 0x01 : 0x00;
 	uint32_t timestamp = (uint32_t)(esp_timer_get_time () / 1000000);
 

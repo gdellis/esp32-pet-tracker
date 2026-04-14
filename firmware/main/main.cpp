@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "accelerometer.hpp"
+#include "battery.hpp"
 #include "board_config.h"
 #include "button_handler.hpp"
 #include "deep_sleep.hpp"
@@ -51,7 +52,13 @@ app_main (void) {
 	ble.init ();
 	ble.start ();
 
-	static TrackerStateMachine state_machine (gps, lora, accel, ble, led);
+	static BatteryDriver battery;
+	esp_err_t battery_err = battery.init ();
+	if (battery_err != ESP_OK) {
+		ESP_LOGE (TAG, "Battery init failed: %s", esp_err_to_name (battery_err));
+	}
+
+	static TrackerStateMachine state_machine (gps, lora, accel, ble, led, battery);
 	state_machine.init ();
 
 	ESP_LOGI (TAG, "Pet tracker initialized, entering main loop");

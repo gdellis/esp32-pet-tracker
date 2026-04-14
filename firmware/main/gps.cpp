@@ -15,6 +15,16 @@ Gps::~Gps () {
 
 bool
 Gps::init () {
+	gpio_config_t power_config = {
+		.pin_bit_mask = (1ULL << BOARD_GPS_POWER_PIN),
+		.mode = GPIO_MODE_OUTPUT,
+		.pull_up_en = GPIO_PULLUP_DISABLE,
+		.pull_down_en = GPIO_PULLDOWN_DISABLE,
+		.intr_type = GPIO_INTR_DISABLE,
+	};
+	ESP_ERROR_CHECK (gpio_config (&power_config));
+	gpio_set_level (BOARD_GPS_POWER_PIN, 0);
+
 	uart_config_t uart_config = {};
 	uart_config.baud_rate = 115200;
 	uart_config.data_bits = UART_DATA_8_BITS;
@@ -33,11 +43,13 @@ Gps::init () {
 
 void
 Gps::power_on () {
+	gpio_set_level (BOARD_GPS_POWER_PIN, 1);
 	ESP_LOGD (TAG, "GPS powered on");
 }
 
 void
 Gps::power_off () {
+	gpio_set_level (BOARD_GPS_POWER_PIN, 0);
 	ESP_LOGD (TAG, "GPS powered off");
 }
 

@@ -51,6 +51,26 @@ See `firmware/main/board_config.h` for ESP32S3/ESP32C6 pin mappings.
 - **FreeRTOS API signatures**: Verify in ESP-IDF v6.0 headers
 - **Port access**: Add user to `docker` group or use `sudo`
 
+### ESP-IDF Installation
+
+ESP-IDF v6.0 is installed at `~/.espressif/v6.0/esp-idf`. To activate the environment:
+
+```bash
+. ~/.espressif/v6.0/esp-idf/export.sh
+```
+
+Or add to shell profile (`~/.bashrc` or `~/.zshrc`):
+```bash
+alias ef='. ~/.espressif/v6.0/esp-idf/export.sh'
+```
+
+**Build commands:**
+```bash
+. ~/.espressif/v6.0/esp-idf/export.sh  # Activate ESP-IDF
+idf.py build                           # Build firmware
+idf.py -p /dev/ttyACM0 flash monitor  # Flash and monitor
+```
+
 ## IDE Setup
 
 ### LSP Warnings (Expected)

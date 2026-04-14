@@ -5,6 +5,7 @@ idf_component_register(
     "button_handler.cpp"
     "gps.cpp"
     "ble.cpp"
+    "battery.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/lora/sx1262.cpp"
     INCLUDE_DIRS "."
 )

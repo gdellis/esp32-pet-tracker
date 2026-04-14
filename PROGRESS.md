@@ -44,7 +44,7 @@
 | 6 | NVS config storage | ✅ Done (PR #12) |
 | 7 | Motion-aware sleep | ✅ Done (PR #11) |
 | 8 | Geofencing | ✅ Done (PR #13, #14) |
-| 9 | Integration testing | Pending |
+| 9 | Integration testing | ✅ Done (PR #24) |
 | 10 | Base station (Pi + Python) | Pending |
 | 11 | Flask Web UI | Pending |
 | 12 | PCB design | Pending |
@@ -108,28 +108,28 @@
 
 ## Codebase Analysis (2026-04-12)
 
-### Overall Health: 6/10 - Functional firmware, incomplete system
+### Overall Health: 7/10 - Functional firmware, base station missing
 
 ### Code Quality Assessment
 
 | Aspect | Rating | Notes |
 |--------|--------|-------|
 | Code Organization | 8/10 | Clean separation, follows ESP-IDF patterns |
-| Feature Completeness | 5/10 | Core firmware complete, base station missing |
-| Error Handling | 7/10 | Proper error returns, but some ignored |
-| Testing | 7/10 | Good host test coverage, no target tests |
-| Documentation | 7/10 | Good README/PROGRESS, no API docs |
+| Feature Completeness | 7/10 | Core firmware complete, base station pending |
+| Error Handling | 8/10 | Proper error returns, BLE bugs fixed |
+| Testing | 8/10 | Good host test coverage + integration tests |
+| Documentation | 7/10 | Good README/PROGRESS, DESIGN.md updated |
 | Build System | 8/10 | Clean Docker setup, good CI |
-| Code Quality | 6/10 | Some dead code, potential bugs in BLE |
+| Code Quality | 8/10 | BLE bugs fixed, no critical issues |
 
 ### Critical Bugs Identified
 
-| Issue | Location | Impact |
-|-------|----------|--------|
-| BLE characteristic handles never populated | `ble.cpp:373-378` | READ operations fail - handles are 0 |
-| `check_button()` dead code | `state_machine.cpp:235-237` | Never called, misleading |
-| BLE `update_location()` doesn't notify | `ble.cpp:330-340` | Clients don't receive push updates |
-| `(void)ret` ignores errors | `ble.cpp:224` | Silently swallows characteristic creation errors |
+| Issue | Location | Impact | Status |
+|-------|----------|---------|--------|
+| BLE characteristic handles never populated | `ble.cpp:373-378` | READ operations fail | ✅ Fixed PR #23 |
+| `check_button()` dead code | `state_machine.cpp:235-237` | Never called | ✅ Fixed PR #23 |
+| BLE `update_location()` doesn't notify | `ble.cpp:330-340` | Clients don't receive updates | ✅ Fixed PR #23 |
+| `(void)ret` ignores errors | `ble.cpp:224` | Silently swallows errors | ✅ Fixed PR #23 |
 
 ### Missing/Incomplete
 
@@ -144,9 +144,11 @@
 ### Recommended Next Steps
 
 1. ~~Fix critical BLE bugs~~ - ✅ Done (PR #23 merged)
-2. **Phase 9: Integration testing** - Test full state machine flow with mocks
-3. **Phase 10: Base station** - Start Python/Flask receiver (firmware LoRa TX is complete)
-4. **PCB design** - Begin KiCad layout to enable battery reading
+2. ~~Phase 9: Integration testing~~ - ✅ Done (PR #24 merged)
+3. ~~GPS power switching~~ - ✅ Done (PR #25)
+4. ~~Battery ADC reading~~ - ✅ Done (PR #25)
+5. **Phase 10: Base station** - Start Python/Flask receiver (firmware LoRa TX is complete)
+6. **PCB design** - Begin KiCad layout to enable battery reading
 
 ---
 
