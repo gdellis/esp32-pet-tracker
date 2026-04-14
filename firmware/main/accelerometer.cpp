@@ -8,6 +8,7 @@ static const char* TAG = "lis3dh";
 
 static i2c_port_t s_i2c_port = I2C_NUM_0;
 static gpio_num_t s_int_pin = GPIO_NUM_0;
+static i2c_master_dev_handle_t s_i2c_device_handle;
 
 Accelerometer::Accelerometer (i2c_port_t i2c_port, gpio_num_t int_pin)
 	: i2c_port_ (i2c_port), int_pin_ (int_pin) {}
@@ -17,26 +18,19 @@ Accelerometer::init (i2c_port_t i2c_port, gpio_num_t int_pin) {
 	s_i2c_port = i2c_port;
 	s_int_pin = int_pin;
 
-	i2c_master_bus_config_t bus_conf = { .i2c_port = i2c_port,
-										 .sda_io_num = BOARD_ACCEL_SDA_PIN,
-										 .scl_io_num = BOARD_ACCEL_SCL_PIN,
-										 .sda_pullup_en = GPIO_PULLUP_ENABLE,
-										 .scl_pullup_en = GPIO_PULLUP_ENABLE,
-										 .clk_speed = 100000 };
+	i2c_master_bus_config_t bus_conf
+		= { i2c_port, BOARD_ACCEL_SDA_PIN, BOARD_ACCEL_SCL_PIN, I2C_CLK_SRC_DEFAULT, 7, 0, 0, 0,
+			true };
 
 	i2c_master_bus_handle_t bus_handle;
-	esp_err_t ret = i2c_master_driver_install (&bus_handle, &bus_conf);
+	esp_err_t ret = i2c_new_master_bus (&bus_conf, &bus_handle);
 	if (ret != ESP_OK) {
 		return ret;
 	}
 
-	i2c_device_config_t dev_conf = {
-		.dev_addr_length = I2C_ADDR_BIT_LEN_7,
-		.device_address = LIS3DH_I2C_ADDR,
-		.scl_speed_hz = 100000,
-	};
+	i2c_device_config_t dev_conf = { I2C_ADDR_BIT_LEN_7, LIS3DH_I2C_ADDR, 100000, 0, 0 };
 
-	ret = i2c_master_bus_add_device (bus_handle, &dev_conf, &i2c_device_handle_);
+	ret = i2c_master_bus_add_device (bus_handle, &dev_conf, &s_i2c_device_handle);
 	if (ret != ESP_OK) {
 		return ret;
 	}
@@ -211,17 +205,17 @@ esp_err_t
 Accelerometer::write_reg (uint8_t reg, uint8_t value) {
 	uint8_t data[2] = { reg, value };
 
-	return i2c_master_transmit (i2c_device_handle_, data, 2, -1);
+	return i2c_master_transmit (s_i2c_device_handle, data, 2, -1);
 }
 
 esp_err_t
 Accelerometer::read_reg (uint8_t reg, uint8_t& value) {
-	esp_err_t ret = i2c_master_transmit (i2c_device_handle_, &reg, 1, -1);
+	esp_err_t ret = i2c_master_transmit (s_i2c_device_handle, &reg, 1, -1);
 	if (ret != ESP_OK) {
 		return ret;
 	}
 
-	return i2c_master_receive (i2c_device_handle_, &value, 1, -1);
+	return i2c_master_receive (s_i2c_device_handle, &value, 1, -1);
 }
 
 esp_err_t
