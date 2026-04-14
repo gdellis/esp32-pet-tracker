@@ -6,7 +6,7 @@ on:
   pull_request_review_comment:
     types: [created]
 
-env:
+ev:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -17,9 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-   #   contents: read
-   #   pull-requests: read
-   #   issues: write
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -34,4 +34,3 @@ jobs:
         with:
           model: ${{ secrets.OC_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}
           # github_token: ${{ secrets.GITHUB_TOKEN }}
-
