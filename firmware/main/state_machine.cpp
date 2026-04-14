@@ -282,7 +282,7 @@ TrackerStateMachine::try_lora_send (const GpsData& data, bool valid_fix) {
 	int32_t lat = valid_fix ? (int32_t)(data.latitude * 1000000) : 0;
 	int32_t lon = valid_fix ? (int32_t)(data.longitude * 1000000) : 0;
 	int32_t alt = valid_fix ? (int32_t)(data.altitude * 100) : 0;
-	uint16_t battery = battery_.read_percentage ();
+	uint8_t battery = battery_.read_percentage ().value_or (255); // 255 = read error
 	uint8_t flags = valid_fix ? 0x01 : 0x00;
 	uint32_t timestamp = (uint32_t)(esp_timer_get_time () / 1000000);
 

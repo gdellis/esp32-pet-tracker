@@ -10,7 +10,10 @@ static const char* TAG = "gps";
 Gps::Gps (uart_port_t uart_num) : uart_num_ (uart_num), data_ ({}) {}
 
 Gps::~Gps () {
-	uart_driver_delete (uart_num_);
+	esp_err_t err = uart_driver_delete (uart_num_);
+	if (err != ESP_OK) {
+		ESP_LOGW (TAG, "UART driver delete failed: %s", esp_err_to_name (err));
+	}
 }
 
 bool
@@ -22,7 +25,11 @@ Gps::init () {
 		.pull_down_en = GPIO_PULLDOWN_DISABLE,
 		.intr_type = GPIO_INTR_DISABLE,
 	};
-	ESP_ERROR_CHECK (gpio_config (&power_config));
+	esp_err_t err = gpio_config (&power_config);
+	if (err != ESP_OK) {
+		ESP_LOGE (TAG, "GPIO config failed: %s", esp_err_to_name (err));
+		return false;
+	}
 	gpio_set_level (BOARD_GPS_POWER_PIN, 0);
 
 	uart_config_t uart_config = {};

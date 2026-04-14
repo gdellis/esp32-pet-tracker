@@ -33,4 +33,5 @@ jobs:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         with:
           model: ${{ secrets.OC_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}
-         # github_token: ${{ secrets.GITHUB_TOKEN }}
+          # github_token: ${{ secrets.GITHUB_TOKEN }}
+
