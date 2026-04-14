@@ -30,6 +30,16 @@ repos:
   hooks:
   - id: shellcheck
 
+# Python linting and formatting
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.0
+  hooks:
+  - id: ruff
+    args: [ '--fix' ]
+    files: ^base_station/
+  - id: ruff-format
+    files: ^base_station/
+
 # C++ formatting
 - repo: https://github.com/pre-commit/mirrors-clang-format
   rev: v18.1.8
