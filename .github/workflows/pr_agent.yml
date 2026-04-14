@@ -28,8 +28,8 @@ jobs:
             echo "Error: OLLAMA_API_KEY secret is not set or empty"
             exit 1
           fi  
-      
-      - uses: anomalyco/opencode/github@latest
+      - name: Run Opencode
+        uses: anomalyco/opencode/github@latest
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
