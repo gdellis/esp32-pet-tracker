@@ -100,9 +100,13 @@
 
 ### Battery Reading
 
-- **Status**: Not implemented
-- **Plan**: Add ADC reading for battery voltage (hardware dependent - requires PCB)
-- **Note**: Deferred until PCB design complete
+- **Status**: ✅ Implemented (PR #25 merged)
+- **Files**: `battery.hpp`, `battery.cpp`
+- **Features**:
+  - ADC voltage reading with voltage divider calculation
+  - Percentage calculation (3000mV empty → 4200mV full)
+  - Integrated into state machine `try_lora_send()` for transmission
+  - GPS power switching via MOSFET
 
 ---
 
@@ -145,8 +149,8 @@
 
 1. ~~Fix critical BLE bugs~~ - ✅ Done (PR #23 merged)
 2. ~~Phase 9: Integration testing~~ - ✅ Done (PR #24 merged)
-3. ~~GPS power switching~~ - ✅ Done (PR #25)
-4. ~~Battery ADC reading~~ - ✅ Done (PR #25)
+3. ~~GPS power switching~~ - ✅ Done (PR #25 merged)
+4. ~~Battery ADC reading~~ - ✅ Done (PR #25 merged)
 5. **Phase 10: Base station** - Start Python/Flask receiver (firmware LoRa TX is complete)
 6. **PCB design** - Begin KiCad layout to enable battery reading
 
