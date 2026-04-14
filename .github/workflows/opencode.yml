@@ -25,13 +25,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        # with:
-          # persist-credentials: false
+        with:
+          persist-credentials: false
 
       - name: Run opencode
         uses: anomalyco/opencode/github@latest
         env:
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
         with:
           model: ${{ secrets.OC_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
