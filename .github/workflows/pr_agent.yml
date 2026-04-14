@@ -35,10 +35,10 @@ jobs:
         uses: anomalyco/opencode/github@latest
         env:
           OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: ${{ secrets.REVIEW_AGENT_MODEL || 'ollama-cloud/qwen3-coder:480b' }}
-          # use_github_token: true
+          use_github_token: true
           prompt: |
             Review this pull request:
             - Verify github actions in PR passed  
