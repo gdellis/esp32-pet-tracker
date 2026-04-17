@@ -5,6 +5,7 @@
 #include "freertos/event_groups.h"
 #include "freertos/timers.h"
 #include <string.h>
+#include <vector>
 
 static const char* TAG = "sx1262";
 
@@ -425,9 +426,9 @@ LoRaDriver::receive (uint8_t* data, size_t max_len, size_t* actual_len, uint32_t
 		}
 
 		uint8_t cmd = 0x1F;
-		uint8_t rx_data[*actual_len + 1];
-		read_reg (cmd, rx_data, *actual_len + 1);
-		memcpy (data, rx_data + rx_start, *actual_len);
+		std::vector<uint8_t> rx_data (*actual_len + 1);
+		read_reg (cmd, rx_data.data (), *actual_len + 1);
+		memcpy (data, rx_data.data () + rx_start, *actual_len);
 
 		int8_t snr = (int8_t)read_reg (0x1D);
 		int8_t rssi = (int8_t)read_reg (0x1E);
