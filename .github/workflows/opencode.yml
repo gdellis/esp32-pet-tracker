@@ -33,8 +33,8 @@ jobs:
           fetch-depth: ${{ inputs.include_pr_context && 0 || 1 }}
       - name: Test-Inputs
         run: |
-          echo MODEL: ${{ inputs.model }}
-          echo PROMPT: ${{ inputs.prompt }}
+          echo "MODEL: ${{ inputs.model }}"
+          echo "PROMPT: ${{ inputs.prompt }}"
       - name: Run OpenCode
         uses: anomalyco/opencode/github@latest
         env:
