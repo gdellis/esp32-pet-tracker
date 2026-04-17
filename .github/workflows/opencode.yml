@@ -2,6 +2,11 @@ name: OpenCode Reusable Workflow
 
 on:
   workflow_call:
+    secrets:
+      api_key:
+        description: 'AI Provider API key'
+        required: false
+
     inputs:
       model:
         description: 'Ollama model to use'
@@ -31,15 +36,11 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: ${{ inputs.include_pr_context && 0 || 1 }}
-      - name: Test-Inputs
-        run: |
-          echo "MODEL: ${{ inputs.model }}"
-          echo "PROMPT: ${{ inputs.prompt }}"
       - name: Run OpenCode
         uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OLLAMA_API_KEY: ${{ secrets.OLLAMA_API_KEY }}
+          OLLAMA_API_KEY: ${{ secrets.api_key }}
         with:
           model: ${{ inputs.model }}
           prompt: ${{ inputs.prompt }}
