@@ -10,9 +10,6 @@ concurrency:
   group: opencode-comment-${{ github.event.comment.id }}
   cancel-in-progress: true
 
-env:
-  AGENT_MODEL: ${{ secrets.OC_AGENT_MODEL }}
-
 jobs:
   opencode:
     if: |
@@ -25,5 +22,5 @@ jobs:
       issues: write
     uses: ./.github/workflows/opencode.yml
     with:
-      model: $AGENT_MODEL
+      model: ollama-cloud/minimax-m2.7
       include_pr_context: true
