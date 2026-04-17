@@ -22,5 +22,5 @@ jobs:
       issues: write
     uses: ./.github/workflows/opencode.yml
     with:
-      model: "ollama-cloud/minimax-m2.7"
+      model: 'ollama-cloud/minimax-m2.7'
       include_pr_context: true

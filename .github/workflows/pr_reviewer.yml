@@ -21,7 +21,7 @@ jobs:
     
     with:
       include_pr_context: true
-      model: "ollama-cloud/minimax-m2.7"
+      model: 'ollama-cloud/minimax-m2.7'
       prompt: |
         Review this pull request:
         - Verify github actions in PR passed
