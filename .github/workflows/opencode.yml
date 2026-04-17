@@ -2,10 +2,6 @@ name: OpenCode Reusable Workflow
 
 on:
   workflow_call:
-    secrets:
-      model:
-        description: 'Secret containing the model name (overrides model input)'
-        required: false
     inputs:
       model:
         description: 'OLLAMA model to use'

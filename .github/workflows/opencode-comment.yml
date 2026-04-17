@@ -22,6 +22,5 @@ jobs:
       issues: write
     uses: ./.github/workflows/opencode.yml
     with:
-      include_pr_context: true
-    secrets:
       model: ${{ secrets.OC_AGENT_MODEL }}
+      include_pr_context: true
