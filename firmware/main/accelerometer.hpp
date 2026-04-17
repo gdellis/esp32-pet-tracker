@@ -14,16 +14,11 @@ constexpr uint8_t LIS3DH_REG_CTRL_MIN = 0x20;
 constexpr uint8_t LIS3DH_REG_CTRL_MAX = 0x25;
 constexpr uint8_t LIS3DH_REG_INT_MIN = 0x30;
 constexpr uint8_t LIS3DH_REG_INT_MAX = 0x37;
-constexpr uint8_t LIS3DH_REG_OUT_XL = 0x28;
-constexpr uint8_t LIS3DH_REG_OUT_XH = 0x29;
-constexpr uint8_t LIS3DH_REG_OUT_YL = 0x2A;
-constexpr uint8_t LIS3DH_REG_OUT_YH = 0x2B;
-constexpr uint8_t LIS3DH_REG_OUT_ZL = 0x2C;
-constexpr uint8_t LIS3DH_REG_OUT_ZH = 0x2D;
+constexpr uint8_t LIS3DH_REG_OUT_MIN = 0x28;
+constexpr uint8_t LIS3DH_REG_OUT_MAX = 0x2D;
 
 #define LIS3DH_I2C_ADDR 0x19
 
-#define LIS3DH_REG_STATUS_REG	 0x27
 #define LIS3DH_REG_CTRL_REG1	 0x20
 #define LIS3DH_REG_CTRL_REG2	 0x21
 #define LIS3DH_REG_CTRL_REG3	 0x22

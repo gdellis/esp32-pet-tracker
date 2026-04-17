@@ -224,7 +224,7 @@ static bool
 is_valid_register (uint8_t reg) {
 	return (reg >= LIS3DH_REG_CTRL_MIN && reg <= LIS3DH_REG_CTRL_MAX)
 		   || (reg >= LIS3DH_REG_INT_MIN && reg <= LIS3DH_REG_INT_MAX) || reg == LIS3DH_REG_WHOAMI
-		   || reg == LIS3DH_REG_STATUS || (reg >= LIS3DH_REG_OUT_XL && reg <= LIS3DH_REG_OUT_ZH);
+		   || reg == LIS3DH_REG_STATUS || (reg >= LIS3DH_REG_OUT_MIN && reg <= LIS3DH_REG_OUT_MAX);
 }
 
 esp_err_t
@@ -260,6 +260,11 @@ Accelerometer::read_reg16 (uint8_t reg, int16_t& value) {
 	esp_err_t ret = read_reg (reg, low);
 	if (ret != ESP_OK) {
 		return ret;
+	}
+
+	if (!is_valid_register (reg + 1)) {
+		ESP_LOGE (TAG, "Invalid register address for high byte: 0x%02x", reg + 1);
+		return ESP_ERR_INVALID_ARG;
 	}
 
 	ret = read_reg (reg + 1, high);
