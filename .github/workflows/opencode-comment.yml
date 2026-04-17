@@ -15,7 +15,11 @@ jobs:
     if: |
       contains(github.event.comment.body, '/oc') ||
       contains(github.event.comment.body, '/opencode')
-    
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      issues: write
     uses: ./.github/workflows/opencode.yml
     with:
       model: 'ollama-cloud/minimax-m2.7'
