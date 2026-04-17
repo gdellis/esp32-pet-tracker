@@ -4,11 +4,21 @@
 #include "driver/i2c_master.h"
 #include "esp_err.h"
 #include "esp_sleep.h"
-#include <stdint.h>
+#include <cstdint>
+
+constexpr uint32_t I2C_CLOCK_SPEED_HZ = 400000;
+
+constexpr uint8_t LIS3DH_REG_WHOAMI = 0x0F;
+constexpr uint8_t LIS3DH_REG_STATUS = 0x27;
+constexpr uint8_t LIS3DH_REG_CTRL_MIN = 0x20;
+constexpr uint8_t LIS3DH_REG_CTRL_MAX = 0x25;
+constexpr uint8_t LIS3DH_REG_INT_MIN = 0x30;
+constexpr uint8_t LIS3DH_REG_INT_MAX = 0x37;
+constexpr uint8_t LIS3DH_REG_OUT_MIN = 0x28;
+constexpr uint8_t LIS3DH_REG_OUT_MAX = 0x2D;
 
 #define LIS3DH_I2C_ADDR 0x19
 
-#define LIS3DH_REG_STATUS_REG	 0x27
 #define LIS3DH_REG_CTRL_REG1	 0x20
 #define LIS3DH_REG_CTRL_REG2	 0x21
 #define LIS3DH_REG_CTRL_REG3	 0x22

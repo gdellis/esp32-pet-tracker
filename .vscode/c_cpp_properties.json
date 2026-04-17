@@ -6,7 +6,7 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [],
-            "compilerPath": "${env:HOME}/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp32s3-elf/bin/xtensa-esp32s3-elf-gcc",
+            "compilerPath": "${env:HOME}/.espressif/tools/xtensa-esp-elf/esp-15.2.0_20251204/xtensa-esp-elf/bin/xtensa-esp32-elf-gcc",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-clang-x64"
