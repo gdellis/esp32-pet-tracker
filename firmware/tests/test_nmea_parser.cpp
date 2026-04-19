@@ -14,7 +14,7 @@ TEST_CASE("Checksum validation", "[checksum]") {
         REQUIRE(nmea_validate_checksum(sentence, strlen(sentence)) == false);
     }
 
-    SECTION("No checksum star fails") {
+    SECTION("Absent checksum fails") {
         const char* sentence = "$GPGGA,123519,4807.038,N,01131.000,W,1,08,0.9,545.4,M,47.0,M,,";
         REQUIRE(nmea_validate_checksum(sentence, strlen(sentence)) == false);
     }

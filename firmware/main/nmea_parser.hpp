@@ -93,12 +93,12 @@ nmea_validate_checksum (const char* nmea, size_t len) {
 
 	char expected_str[3] = { checksum_ptr[1], checksum_ptr[2], '\0' };
 	char* endptr = NULL;
-	uint8_t expected = (uint8_t)strtol (expected_str, &endptr, 16);
-	if (endptr == expected_str || *endptr != '\0') {
+	unsigned long expected = strtoul (expected_str, &endptr, 16);
+	if (endptr == expected_str || *endptr != '\0' || expected > 255) {
 		return false;
 	}
 
-	return calculated == expected;
+	return calculated == (uint8_t)expected;
 }
 
 /**
