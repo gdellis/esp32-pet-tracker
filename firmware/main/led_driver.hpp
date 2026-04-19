@@ -9,7 +9,9 @@ class LedDriver : public GpioDriver {
   public:
 	/**
 	 * @brief Construct a LedDriver
-	 * @param pin GPIO pin connected to LED
+	 * @param pin GPIO pin connected to LED (must be valid board GPIO)
+	 * @note Construction cannot fail - pin is validated at compile time via board_config.h.
+	 *       LED init is purely runtime GPIO configuration which ESP-IDF guarantees success.
 	 */
 	LedDriver (gpio_num_t pin);
 
