@@ -75,7 +75,7 @@ app_main (void) {
 
 	esp_task_wdt_config_t wdt_config = {
 		.timeout_ms = BOARD_WDT_TIMEOUT_MS,
-		.idle_core_mask = 0,
+		.idle_core_mask = 0,  /* Both cores - app is single-threaded */
 		.trigger_panic = true,
 	};
 	esp_task_wdt_init (&wdt_config);

@@ -222,7 +222,10 @@ TrackerStateMachine::check_geofence () {
 			alert.longitude = (int32_t)(data.longitude * COORD_SCALE);
 			alert.altitude = (int32_t)(data.altitude * 100);
 			alert.timestamp = (uint32_t)(esp_timer_get_time () / 1000000);
-			ESP_ERROR_CHECK (ble_.send_alert (alert));
+			esp_err_t err = ble_.send_alert (alert);
+			if (err != ESP_OK) {
+				ESP_LOGW (TAG, "Failed to send geofence alert: %s", esp_err_to_name (err));
+			}
 			break;
 		}
 	}
