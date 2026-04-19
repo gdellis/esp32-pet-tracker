@@ -12,6 +12,9 @@
 
 #include <sdkconfig.h>
 
+/** @brief Task watchdog timeout in milliseconds */
+#define BOARD_WDT_TIMEOUT_MS 5000
+
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
 #include <driver/gpio.h>
 

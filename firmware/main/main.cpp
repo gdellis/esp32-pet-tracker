@@ -74,12 +74,14 @@ app_main (void) {
 	ESP_LOGI (TAG, "Pet tracker initialized, entering main loop");
 
 	esp_task_wdt_config_t wdt_config = {
-		.timeout_ms = 5000,
+		.timeout_ms = BOARD_WDT_TIMEOUT_MS,
 		.idle_core_mask = 0,
 		.trigger_panic = true,
 	};
 	esp_task_wdt_init (&wdt_config);
 	esp_task_wdt_add (NULL);
+
+	ESP_LOGI (TAG, "Watchdog initialized with %ums timeout", BOARD_WDT_TIMEOUT_MS);
 
 	while (true) {
 		esp_task_wdt_reset ();
