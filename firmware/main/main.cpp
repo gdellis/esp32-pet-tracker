@@ -37,20 +37,26 @@ app_main (void) {
 	static LedDriver led (BOARD_LED_PIN);
 
 	static Gps gps (UART_NUM_1);
-	gps.init ();
+	esp_err_t gps_err = gps.init ();
+	if (gps_err != ESP_OK) {
+		ESP_LOGE (TAG, "GPS init failed: %s", esp_err_to_name (gps_err));
+	}
 
 	static LoRaDriver lora (spi_host_device_t::SPI2_HOST, BOARD_LORA_MOSI_PIN, BOARD_LORA_MISO_PIN,
 							BOARD_LORA_SCK_PIN, BOARD_LORA_NSS_PIN, BOARD_LORA_RESET_PIN,
 							BOARD_LORA_BUSY_PIN, BOARD_LORA_DIO1_PIN);
-	lora.init ();
+	ESP_ERROR_CHECK (lora.init ());
 
 	static Accelerometer accel (I2C_NUM_0, BOARD_ACCEL_INT_PIN);
-	accel.init ();
-	accel.enable_motion_interrupt (2000);
+	esp_err_t accel_err = accel.init ();
+	if (accel_err != ESP_OK) {
+		ESP_LOGE (TAG, "Accelerometer init failed: %s", esp_err_to_name (accel_err));
+	}
+	ESP_ERROR_CHECK (accel.enable_motion_interrupt (2000));
 
 	static BleServer ble;
-	ble.init ();
-	ble.start ();
+	ESP_ERROR_CHECK (ble.init ());
+	ESP_ERROR_CHECK (ble.start ());
 
 	static BatteryDriver battery;
 	esp_err_t battery_err = battery.init ();
