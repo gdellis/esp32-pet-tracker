@@ -42,6 +42,15 @@ class Config {
 	static esp_err_t get_spreading_factor (uint8_t& sf);
 	static esp_err_t set_spreading_factor (uint8_t sf);
 
+	/**
+	 * @brief Get device name from NVS
+	 * @param name Buffer to store device name
+	 * @param max_len Maximum buffer size
+	 * @return ESP_OK on success, error code otherwise
+	 * @note If key not found in NVS, returns default name "PetTracker" and ESP_OK.
+	 *       Callers who need to distinguish "stored value" vs "default" should use
+	 *       nvs_get_str() directly.
+	 */
 	static esp_err_t get_device_name (char* name, size_t max_len);
 	static esp_err_t set_device_name (const char* name);
 
